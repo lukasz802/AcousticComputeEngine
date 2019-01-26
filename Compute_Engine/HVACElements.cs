@@ -1712,7 +1712,7 @@ namespace HVACElements
         private int _width;
         private int _height;
         private int _diameter;
-        private int _lenght;
+        private double _lenght;
         private int _liner_thickness;
         private bool _liner_check;
         private DuctType _duct_type;
@@ -1730,7 +1730,7 @@ namespace HVACElements
         /// <param name="linerCheck">Czy kanał jest zaizolowany akustycznie.</param>
         /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
         /// <returns></returns>
-        public Duct(string name, string comments, DuctType ductType, double airFlow, int width, int height, int diameter, int lenght, int linerThickness, bool linerCheck, bool include)
+        public Duct(string name, string comments, DuctType ductType, double airFlow, int width, int height, int diameter, double lenght, int linerThickness, bool linerCheck, bool include)
         {
             _type = "duct";
             this.Comments = comments;
@@ -1890,7 +1890,7 @@ namespace HVACElements
             }
         }
 
-        public int Lenght
+        public double Lenght
         {
             get
             {
@@ -1898,7 +1898,14 @@ namespace HVACElements
             }
             set
             {
-                _lenght = value;
+                if (value < 0.1)
+                {
+                    _lenght = 0.1;
+                }
+                else
+                {
+                    _lenght = value;
+                }
             }
         }
 
@@ -1981,7 +1988,7 @@ namespace HVACElements
         private double _lenght;
         private DiffuserType _diffuser_type;
 
-        /// <summary>Kanał prosty.</summary>
+        /// <summary>Dyfuzor/konfuzor lub nagłe zwężenie/rozszerzenie.</summary>
         /// <param name="name">Nazwa elementu.</param>
         /// <param name="comments">Informacje dodatkowe.</param>
         /// <param name="diffuserType">Typ redukcji.</param>
@@ -1998,7 +2005,7 @@ namespace HVACElements
         /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
         /// <returns></returns>
         public Diffuser(string name, string comments, DiffuserType diffuserType, DuctType diffuserIn, DuctType diffuserOut, double airFlow, int widthIn, int heightIn,
-            int widthOut, int heightOut, int diameterIn, int diameterOut, int lenght, bool include)
+            int widthOut, int heightOut, int diameterIn, int diameterOut, double lenght, bool include)
         {
             _type = "diffuser";
             this.Comments = comments;
@@ -2101,7 +2108,11 @@ namespace HVACElements
             }
             set
             {
-                if (value < 0)
+                if (value < 0.1)
+                {
+                    _lenght = 0.1;
+                }
+                else
                 {
                     _lenght = value;
                 }
@@ -2138,30 +2149,44 @@ namespace HVACElements
     [Serializable()]
     public class Bow : ElementsBase, IDimensions
     {
-        private int width;
-        private int height;
-        private int diameter;
-        private double rd;
-        private double rw;
-        private int liner_thickness;
-        private bool liner_check;
-        private DuctType duct_type;
+        private int _width;
+        private int _height;
+        private int _diameter;
+        private double _rd;
+        private double _rw;
+        private int _liner_thickness;
+        private bool _liner_check;
+        private DuctType _duct_type;
 
-        public Bow(string name, string comments, DuctType ductType, double airFlow, int w, int h, int d, double r_w, double r_d, int linerThckness, bool linerCheck, bool include)
+        /// <summary>Łuk.</summary>
+        /// <param name="name">Nazwa elementu.</param>
+        /// <param name="comments">Informacje dodatkowe.</param>
+        /// <param name="ductType">Typ łuku.</param>
+        /// <param name="airFlow">Przepływ powietrza przez element [m3/h].</param>
+        /// <param name="width">Szerokość wlotwego króćca przyłączeniowego [mm].</param>
+        /// <param name="height">Wysokość wlotowego króćca przyłączeniowego [mm].</param>
+        /// <param name="diameter">Średnica wlotowego króćca przyłączeniowego [mm].</param>
+        /// <param name="rw">Względny promień gięcia łuku (w odniesieniu do łuku o przekroju prostokątnym).</param>
+        /// <param name="rd">Względny promień gięcia łuku (w odniesieniu do łuku o przekroju okrągłym).</param>
+        /// <param name="linerThickness">Grubość izoloacji akustycznej łuku [mm].</param>
+        /// <param name="linerCheck">Czy łuk jest zaizolowany akustycznie.</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
+        /// <returns></returns>
+        public Bow(string name, string comments, DuctType ductType, double airFlow, int width, int height, int diameter, double rw, double rd, int linerThckness, bool linerCheck, bool include)
         {
             _type = "bow";
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
             this.Include = include;
-            duct_type = ductType;
-            width = w;
-            height = h;
-            diameter = d;
-            rw = r_w;
-            rd = r_d;
-            liner_thickness = linerThckness;
-            liner_check = linerCheck;
+            _duct_type = ductType;
+            _width = width;
+            _height = height;
+            _diameter = diameter;
+            _rw = rw;
+            _rd = rd;
+            _liner_thickness = linerThckness;
+            _liner_check = linerCheck;
         }
 
         public Bow()
@@ -2171,33 +2196,33 @@ namespace HVACElements
             this.Name = "bow_1";
             this.AirFlow = 500;
             this.Include = true;
-            duct_type = DuctType.Rectangular;
-            width = 200;
-            height = 200;
-            diameter = 250;
-            rw = 1.5;
-            rd = 1.5;
-            liner_thickness = 25;
-            liner_check = false;
+            _duct_type = DuctType.Rectangular;
+            _width = 200;
+            _height = 200;
+            _diameter = 250;
+            _rw = 1.5;
+            _rd = 1.5;
+            _liner_thickness = 25;
+            _liner_check = false;
         }
 
         public override double[] Attenuation()
         {
             double[] attn = new double[8];
 
-           if (duct_type == DuctType.Rectangular)
+           if (_duct_type == DuctType.Rectangular)
            {
-                attn = HVACAcoustic.Attenuation.BowRectangular(width / 1000.0);
+                attn = HVACAcoustic.Attenuation.BowRectangular(_width / 1000.0);
            }
            else
            {
-               if (liner_check == true)
+               if (_liner_check == true)
                {
-                   attn = HVACAcoustic.Attenuation.BowRound(liner_thickness / 10.0, diameter / 1000.0);
+                   attn = HVACAcoustic.Attenuation.BowRound(_liner_thickness / 10.0, _diameter / 1000.0);
                }
                else
                {
-                   attn = HVACAcoustic.Attenuation.BowRound(0, diameter / 1000.0);
+                   attn = HVACAcoustic.Attenuation.BowRound(0, _diameter / 1000.0);
                }
            }
             return attn;
@@ -2207,13 +2232,13 @@ namespace HVACElements
         {
             double[] lw = new double[8];
 
-            if (duct_type == DuctType.Rectangular)
+            if (_duct_type == DuctType.Rectangular)
             {
-                lw = HVACAcoustic.Noise.BowRectangular(this.AirFlow, width, height, (rw * width - width  / 2.0) / 1000.0);
+                lw = HVACAcoustic.Noise.BowRectangular(this.AirFlow, _width, _height, (_rw * _width - _width  / 2.0) / 1000.0);
             }
             else
             {
-                lw = HVACAcoustic.Noise.BowRound(this.AirFlow, diameter, (rd * diameter - diameter / 2.0) / 1000.0);
+                lw = HVACAcoustic.Noise.BowRound(this.AirFlow, _diameter, (_rd * _diameter - _diameter / 2.0) / 1000.0);
             }
 
             return lw;
@@ -2223,21 +2248,21 @@ namespace HVACElements
         {
             get
             {
-                return width;
+                return _width;
             }
             set
             {
                 if (value < 80)
                 {
-                    width = 80;
+                    _width = 80;
                 }
                 else if (value < 2000)
                 {
-                    width = value;
+                    _width = value;
                 }
                 else
                 {
-                    width = 2000;
+                    _width = 2000;
                 }
             }
         }
@@ -2246,21 +2271,21 @@ namespace HVACElements
         {
             get
             {
-                return height;
+                return _height;
             }
             set
             {
                 if (value < 80)
                 {
-                    height = 80;
+                    _height = 80;
                 }
                 else if (value < 2000)
                 {
-                    height = value;
+                    _height = value;
                 }
                 else
                 {
-                    height = 2000;
+                    _height = 2000;
                 }
             }
         }
@@ -2269,13 +2294,13 @@ namespace HVACElements
         {
             get
             {
-                if (duct_type == DuctType.Rectangular)
+                if (_duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow/3600) / ((width / 1000.0) * (height / 1000.0));
+                    return (this.AirFlow/3600) / ((_width / 1000.0) * (_height / 1000.0));
                 }
                 else
                 {
-                    return (this.AirFlow/3600) / (0.25 * Math.PI * Math.Pow(diameter / 1000.0, 2));
+                    return (this.AirFlow/3600) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
                 }
             }
         }
@@ -2284,11 +2309,22 @@ namespace HVACElements
         {
             get
             {
-                return rd;
+                return _rd;
             }
             set
             {
-                rd = value;
+                if (_rd < 0.5)
+                {
+                    _rd = 0.5;
+                }
+                else if (_rd < 5.0)
+                {
+                    _rd = Math.Round(value,2);
+                }
+                else
+                {
+                    _rd = 5.0;
+                }
             }
         }
 
@@ -2296,11 +2332,22 @@ namespace HVACElements
         {
             get
             {
-                return rw;
+                return _rw;
             }
             set
             {
-                rw = value;
+                if (_rw < 0.5)
+                {
+                    _rw = 0.5;
+                }
+                else if (_rw < 5.0)
+                {
+                    _rw = Math.Round(value, 2);
+                }
+                else
+                {
+                    _rw = 5.0;
+                }
             }
         }
 
@@ -2308,21 +2355,21 @@ namespace HVACElements
         {
             get
             {
-                return diameter;
+                return _diameter;
             }
             set
             {
                 if (value < 80)
                 {
-                    diameter = 80;
+                    _diameter = 80;
                 }
                 else if (value < 2000)
                 {
-                    diameter = value;
+                    _diameter = value;
                 }
                 else
                 {
-                    diameter = 2000;
+                    _diameter = 2000;
                 }
             }
         }
@@ -2331,11 +2378,22 @@ namespace HVACElements
         {
             get
             {
-                return liner_thickness;
+                return _liner_thickness;
             }
             set
             {
-                liner_thickness = value;
+                if (value < 25)
+                {
+                    _liner_thickness = 25;
+                }
+                else if (value < 75)
+                {
+                    _liner_thickness = value;
+                }
+                else
+                {
+                    _liner_thickness = 75;
+                }
             }
         }
 
@@ -2343,11 +2401,11 @@ namespace HVACElements
         {
             get
             {
-                return liner_check;
+                return _liner_check;
             }
             set
             {
-                liner_check = value;
+                _liner_check = value;
             }
         }
 
@@ -2355,11 +2413,11 @@ namespace HVACElements
         {
             get
             {
-                return duct_type;
+                return _duct_type;
             }
             set
             {
-                duct_type = value;
+                _duct_type = value;
             }
         }
 
@@ -2368,31 +2426,42 @@ namespace HVACElements
     [Serializable()]
     public class Elbow : ElementsBase
     {
-        private int width;
-        private int height;
-        private double rnd;
-        private byte vanes_number;
-        private int liner_thickness;
-        private bool liner_check;
-        private TurnigVanes tuning_vanes;
-        private ElbowType elbow_type;
+        private int _width;
+        private int _height;
+        private int _rnd;
+        private byte _vanes_number;
+        private bool _liner_check;
+        private TurnigVanes _tuning_vanes;
+        private ElbowType _elbow_type;
 
+        /// <summary>Kolano.</summary>
+        /// <param name="name">Nazwa elementu.</param>
+        /// <param name="comments">Informacje dodatkowe.</param>
+        /// <param name="elbowType">Typ kolana.</param>
+        /// <param name="airFlow">Przepływ powietrza przez element [m3/h].</param>
+        /// <param name="width">Szerokość wlotwego króćca przyłączeniowego [mm].</param>
+        /// <param name="height">Wysokość wlotowego króćca przyłączeniowego [mm].</param>
+        /// <param name="vanesNumber">Liczba kierownic powietrza.</param>
+        /// <param name="turnigVanes">Czy kolano posiada kierownice powietrza.</param>
+        /// <param name="rounding">Promień zaokrąglenia kolana [mm].</param>
+        /// <param name="linerCheck">Czy kolano jest zaizolowany akustycznie.</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
+        /// <returns></returns>
         public Elbow(string name, string comments, double airFlow, ElbowType elbowType, TurnigVanes turnigVanes, byte vanesNumber,
-                 int w, int h,  double rounding, int linerThickness, bool linerCheck, bool include)
+                 int width, int height, int rounding, bool linerCheck, bool include)
         {
             _type = "elbow";
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
             this.Include = include;
-            elbow_type = elbowType;
-            tuning_vanes = TurnigVanes;
-            width = w;
-            height = h;
-            vanes_number = vanesNumber;
-            rnd = rounding;
-            liner_thickness = linerThickness;
-            liner_check = linerCheck;
+            _elbow_type = elbowType;
+            _tuning_vanes = TurnigVanes;
+            _width = width;
+            _height = height;
+            _vanes_number = vanesNumber;
+            _rnd = rounding;
+            _liner_check = linerCheck;
         }
 
         public Elbow()
@@ -2402,27 +2471,26 @@ namespace HVACElements
             this.Name = "elb_1";
             this.AirFlow = 800;
             this.Include = true;
-            elbow_type = ElbowType.Straight;
-            tuning_vanes = TurnigVanes.No;
-            width = 400;
-            height = 200;
-            vanes_number = 3;
-            rnd = 0;
-            liner_thickness = 25;
-            liner_check = false;
+            _elbow_type = ElbowType.Straight;
+            _tuning_vanes = TurnigVanes.No;
+            _width = 400;
+            _height = 200;
+            _vanes_number = 3;
+            _rnd = 0;
+            _liner_check = false;
         }
 
         public override double[] Attenuation()
         {
             double[] attn = new double[8];
 
-           if (liner_check == true)
+           if (_liner_check == true)
            {
-                attn = HVACAcoustic.Attenuation.Elbow(tuning_vanes, liner_thickness / 10.0, width / 1000.0);
+                attn = HVACAcoustic.Attenuation.Elbow(_tuning_vanes, 10.0, _width / 1000.0);
            }
            else
            {
-                attn = HVACAcoustic.Attenuation.Elbow(tuning_vanes, 0, width / 1000.0);
+                attn = HVACAcoustic.Attenuation.Elbow(_tuning_vanes, 0, _width / 1000.0);
            }
             return attn;
         }
@@ -2431,13 +2499,13 @@ namespace HVACElements
         {
             double[] lw = new double[8];
 
-            if (elbow_type == ElbowType.Rounded)
+            if (_elbow_type == ElbowType.Rounded)
             {
-                lw = HVACAcoustic.Noise.Elbow(tuning_vanes, vanes_number, this.AirFlow, width / 1000.0, height / 1000.0, rnd / 1000);
+                lw = HVACAcoustic.Noise.Elbow(_tuning_vanes, _vanes_number, this.AirFlow, _width / 1000.0, _height / 1000.0, _rnd / 1000.0);
             }
             else
             {
-                lw = HVACAcoustic.Noise.Elbow(tuning_vanes, vanes_number, this.AirFlow, width / 1000.0, height / 1000.0, 0);
+                lw = HVACAcoustic.Noise.Elbow(_tuning_vanes, _vanes_number, this.AirFlow, _width / 1000.0, _height / 1000.0, 0);
             }
             return lw;
         }
@@ -2446,21 +2514,21 @@ namespace HVACElements
         {
             get
             {
-                return width;
+                return _width;
             }
             set
             {
                 if (value < 80)
                 {
-                    width = 80;
+                    _width = 80;
                 }
                 else if (value < 2000)
                 {
-                    width = value;
+                    _width = value;
                 }
                 else
                 {
-                    width = 2000;
+                    _width = 2000;
                 }
             }
         }
@@ -2469,21 +2537,21 @@ namespace HVACElements
         {
             get
             {
-                return height;
+                return _height;
             }
             set
             {
                 if (value < 80)
                 {
-                    height = 80;
+                    _height = 80;
                 }
                 else if (value < 2000)
                 {
-                    height = value;
+                    _height = value;
                 }
                 else
                 {
-                    height = 2000;
+                    _height = 2000;
                 }
             }
         }
@@ -2492,7 +2560,7 @@ namespace HVACElements
         {
             get
             {
-                return (this.AirFlow/3600) / ((width / 1000.0) * (height / 1000.0));
+                return (this.AirFlow/3600) / ((_width / 1000.0) * (_height / 1000.0));
             }
         }
 
@@ -2500,35 +2568,65 @@ namespace HVACElements
         {
             get
             {
-                return vanes_number;
+                return _vanes_number;
             }
             set
             {
-                vanes_number = value;
+                if (!(_rnd == 0))
+                {
+                    if (value < 1)
+                    {
+                        _rnd = 1;
+                    }
+                    else if (Math.Round(2.13 * Math.Pow(((double)_rnd / (double)_width), -1) - 1) >= value)
+                    {
+                        _rnd = value;
+                    }
+                    else
+                    {
+                        _rnd = (byte)Math.Round(2.13 * Math.Pow(((double)_rnd / (double)_width), -1) - 1);
+                    }
+                }
+                else
+                {
+                    double dh = 2 * (double)_height * (double)_width / ((double)_height + (double)_width);
+
+                    if (value < 1)
+                    {
+                        _rnd = 1;
+                    }
+                    else if (Math.Round(2.13 * Math.Pow((0.35 * dh / ((double)_width * Math.Pow(2, 0.5))), (-1)) - 1) >= value)
+                    {
+                        _rnd = value;
+                    }
+                    else
+                    {
+                        _rnd = (byte)Math.Round(2.13 * Math.Pow((0.35 * dh / ((double)_width * Math.Pow(2, 0.5))), (-1)) - 1);
+                    }
+                }
             }
         }
 
-        public double Rouning
+        public int Rouning
         {
             get
             {
-                return rnd;
+                return _rnd;
             }
             set
             {
-                rnd = value;
-            }
-        }
-
-        public int LinerDepth
-        {
-            get
-            {
-                return liner_thickness;
-            }
-            set
-            {
-                liner_thickness = value;
+                if (value < 0)
+                {
+                    _rnd = 0;
+                }
+                else if (value < Math.Ceiling(0.6 * _width))
+                {
+                    _rnd = value;
+                }
+                else
+                {
+                    _rnd = (int)Math.Ceiling(0.6 * _width);
+                }
             }
         }
 
@@ -2536,11 +2634,11 @@ namespace HVACElements
         {
             get
             {
-                return liner_check;
+                return _liner_check;
             }
             set
             {
-                liner_check = value;
+                _liner_check = value;
             }
         }
 
@@ -2548,11 +2646,11 @@ namespace HVACElements
         {
             get
             {
-                return tuning_vanes;
+                return _tuning_vanes;
             }
             set
             {
-                tuning_vanes = value;
+                _tuning_vanes = value;
             }
         }
 
@@ -2560,11 +2658,11 @@ namespace HVACElements
         {
             get
             {
-                return elbow_type;
+                return _elbow_type;
             }
             set
             {
-                elbow_type = value;
+                _elbow_type = value;
             }
         }
     }
