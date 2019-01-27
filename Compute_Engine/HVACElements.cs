@@ -22,15 +22,6 @@ namespace HVACElements
         double Velocity { get; }
     }
 
-    public interface IDuctConnection
-    {
-        DuctType DuctType { get; set; }
-        int Width { get; set; }
-        int Height { get; set; }
-        int Diameter { get; set; }
-        double AirFlow { get; set; }
-    }
-
     public enum DuctType
     {
         Round = 0,
@@ -93,7 +84,9 @@ namespace HVACElements
         private string _name;
         private string _comments;
         private bool _include;
+
         public abstract double[] Attenuation();
+
         public abstract double[] Noise();
 
         public string Comments
@@ -1745,7 +1738,8 @@ namespace HVACElements
             _liner_thickness = linerThickness;
             _liner_check = linerCheck;
         }
-
+        
+        /// <summary>Kanał prosty.</summary>
         public Duct()
         {
             _type = "duct";
@@ -1762,6 +1756,7 @@ namespace HVACElements
             _liner_check = false;
         }
 
+        /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
             double[] attn = new double[8];
@@ -1791,6 +1786,7 @@ namespace HVACElements
             return attn;
         }
 
+        /// <summary>Oblicz szum generowany przez element.</summary>
         public override double[] Noise()
         {
             double[] lw = new double[8];
@@ -1904,7 +1900,7 @@ namespace HVACElements
                 }
                 else
                 {
-                    _lenght = value;
+                    _lenght = Math.Round(value,2);
                 }
             }
         }
@@ -1983,8 +1979,8 @@ namespace HVACElements
     [Serializable()]
     public class Diffuser : ElementsBase
     {
-        private IDuctConnection Inlet { get; set; }
-        private IDuctConnection Outlet { get; set; }
+        private DuctConnection _in = null;
+        private DuctConnection _out = null;
         private double _lenght;
         private DiffuserType _diffuser_type;
 
@@ -2014,20 +2010,10 @@ namespace HVACElements
             this.Include = include;
             _diffuser_type = diffuserType;
             _lenght = lenght;
-            Inlet.DuctType = diffuserIn;
-            Inlet.AirFlow = airFlow;
-            Inlet.Width = widthIn;
-            Inlet.Height = heightIn;
-            Inlet.Diameter = diameterIn;
-            _diffuser_type = diffuserType;
-            _lenght = lenght;
-            Outlet.DuctType = diffuserOut;
-            Outlet.AirFlow = airFlow;
-            Outlet.Width = widthOut;
-            Outlet.Height = heightOut;
-            Outlet.Diameter = diameterOut;
+            _in = new DuctConnection(diffuserIn, base.AirFlow, widthIn, heightIn, diameterIn);
+            _out = new DuctConnection(diffuserOut, base.AirFlow, widthOut, heightOut, diameterOut);
         }
-
+        /// <summary>Dyfuzor/konfuzor lub nagłe zwężenie/rozszerzenie.</summary>
         public Diffuser()
         {
             _type = "diffuser";
@@ -2037,63 +2023,57 @@ namespace HVACElements
             this.Include = true;
             _diffuser_type = DiffuserType.Sudden;
             _lenght = 0;
-            Inlet.DuctType = DuctType.Rectangular;
-            Inlet.AirFlow = base.AirFlow;
-            Inlet.Height = 200;
-            Inlet.Width = 200;
-            Inlet.Diameter = 250;
-            Outlet.DuctType = DuctType.Rectangular;
-            Outlet.AirFlow = base.AirFlow;
-            Outlet.Height = 200;
-            Outlet.Width = 200;
-            Outlet.Diameter = 250;
+            _in = new DuctConnection(DuctType.Rectangular, 500, 200, 200, 250);
+            _out = new DuctConnection(DuctType.Rectangular, 500, 200, 200, 250);
         }
 
+        /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
             double[] attn = new double[8];
 
             if (_diffuser_type == DiffuserType.Sudden)
             {
-                if (Inlet.DuctType == DuctType.Rectangular && Inlet.DuctType == DuctType.Rectangular)
+                if (_in.DuctType == DuctType.Rectangular && _out.DuctType == DuctType.Rectangular)
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(Inlet.Width/1000.0 * Inlet.Height/1000.0, Outlet.Width/1000.0 * Outlet.Height/1000.0, 0);
+                    attn = HVACAcoustic.Attenuation.Diffuser(_in.Width/1000.0 * _in.Height/1000.0, _out.Width/1000.0 * _out.Height/1000.0, 0);
                 }
-                else if (Inlet.DuctType == DuctType.Rectangular && Inlet.DuctType == DuctType.Round)
+                else if (_in.DuctType == DuctType.Rectangular && _out.DuctType == DuctType.Round)
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(Inlet.Width / 1000.0 * Inlet.Height / 1000.0, 0.25*Math.PI*Math.Pow(Outlet.Diameter/1000.0,2), 0);
+                    attn = HVACAcoustic.Attenuation.Diffuser(_in.Width / 1000.0 * _in.Height / 1000.0, 0.25*Math.PI*Math.Pow(_out.Diameter/1000.0,2), 0);
                 }
-                else if (Inlet.DuctType == DuctType.Round && Inlet.DuctType == DuctType.Rectangular)
+                else if (_in.DuctType == DuctType.Round && _out.DuctType == DuctType.Rectangular)
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(Inlet.Diameter/1000.0, 2), Outlet.Width/1000.0 * Outlet.Height/1000.0, 0);
+                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(_in.Diameter/1000.0, 2), _out.Width / 1000.0 * _out.Height / 1000.0, 0);
                 }
                 else
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(Inlet.Diameter/1000.0, 2), 0.25 * Math.PI * Math.Pow(Outlet.Diameter/1000, 2), 0);
+                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(_in.Diameter / 1000.0, 2), 0.25 * Math.PI * Math.Pow(_out.Diameter / 1000.0, 2), 0);
                 }
             }
             else
             {
-                if (Inlet.DuctType == DuctType.Rectangular && Inlet.DuctType == DuctType.Rectangular)
+                if (_in.DuctType == DuctType.Rectangular && _out.DuctType == DuctType.Rectangular)
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(Inlet.Width/1000.0 * Inlet.Height/1000.0, Outlet.Width/1000.0 * Outlet.Height/1000.0, _lenght);
+                    attn = HVACAcoustic.Attenuation.Diffuser(_in.Width / 1000.0 * _in.Height / 1000.0, _out.Width / 1000.0 * _out.Height / 1000.0, _lenght);
                 }
-                else if (Inlet.DuctType == DuctType.Rectangular && Inlet.DuctType == DuctType.Round)
+                else if (_in.DuctType == DuctType.Rectangular && _out.DuctType == DuctType.Round)
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(Inlet.Width/1000.0 * Inlet.Height/1000.0, 0.25 * Math.PI * Math.Pow(Outlet.Diameter/1000.0, 2), _lenght);
+                    attn = HVACAcoustic.Attenuation.Diffuser(_in.Width / 1000.0 * _in.Height / 1000.0, 0.25 * Math.PI * Math.Pow(_out.Diameter / 1000.0, 2), _lenght);
                 }
-                else if (Inlet.DuctType == DuctType.Round && Inlet.DuctType == DuctType.Rectangular)
+                else if (_in.DuctType == DuctType.Round && _out.DuctType == DuctType.Rectangular)
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(Inlet.Diameter/1000.0, 2), Outlet.Width/1000.0 * Outlet.Height/1000.0, _lenght);
+                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(_in.Diameter / 1000.0, 2), _out.Width / 1000.0 * _out.Height / 1000.0, _lenght);
                 }
                 else
                 {
-                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(Inlet.Diameter/1000.0, 2), 0.25 * Math.PI * Math.Pow(Outlet.Diameter/1000.0, 2), _lenght);
+                    attn = HVACAcoustic.Attenuation.Diffuser(0.25 * Math.PI * Math.Pow(_in.Diameter / 1000.0, 2), 0.25 * Math.PI * Math.Pow(_out.Diameter / 1000.0, 2), _lenght);
                 }
             }
             return attn;
         }
 
+        /// <summary>Oblicz szum generowany przez element.</summary>
         public override double[] Noise()
         {
             double[] lw = { -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000 };
@@ -2114,7 +2094,7 @@ namespace HVACElements
                 }
                 else
                 {
-                    _lenght = value;
+                    _lenght = Math.Round(value,2);
                 }
             }
         }
@@ -2140,9 +2120,19 @@ namespace HVACElements
             set
             {
                 base.AirFlow = value;
-                Inlet.AirFlow = value;
-                Outlet.AirFlow = value;
+                _in.AirFlow = value;
+                _out.AirFlow = value;
             }
+        }
+
+        public DuctConnection Inlet
+        {
+            get { return _in; }
+        }
+
+        public DuctConnection Outlet
+        {
+            get { return _out; }
         }
     }
 
