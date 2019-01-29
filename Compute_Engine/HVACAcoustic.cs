@@ -1570,7 +1570,7 @@ namespace HVACAcoustic
             {
                 la = co / oct[j];
                 k = -81.096 * Math.Pow((l / la), 4) + 101.97 * Math.Pow((l / la), 3) - 39.077 * Math.Pow((l / la), 2) + 2.3702 * (l / la) + 0.999;
-                i = 30;
+                i = 60;
                 n = 10 * Math.Log10(Math.Pow((i * k + 1), 2) / (4 * i * k));
 
                 do
