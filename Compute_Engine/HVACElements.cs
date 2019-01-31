@@ -132,7 +132,7 @@ namespace HVACElements
             }
         }
 
-        public bool Include
+        public bool IsIncluded
         {
             get
             {
@@ -1272,6 +1272,7 @@ namespace HVACElements
                 {
                     width = 2000;
                 }
+                OnDimensionsChanged();
             }
         }
         
@@ -1295,6 +1296,7 @@ namespace HVACElements
                 {
                     height = 2000;
                 }
+                OnDimensionsChanged();
             }
         }
 
@@ -1318,6 +1320,7 @@ namespace HVACElements
                 {
                     diameter = 1600;
                 }
+                OnDimensionsChanged();
             }
         }
 
@@ -1364,6 +1367,16 @@ namespace HVACElements
                 {
                     airflow = value;
                 }
+            }
+        }
+
+        internal event EventHandler DimensionsChanged;
+
+        protected void OnDimensionsChanged()
+        {
+            if (DimensionsChanged != null)
+            {
+                DimensionsChanged(this, EventArgs.Empty);
             }
         }
     }
@@ -1693,8 +1706,54 @@ namespace HVACElements
     [Serializable()]
     public class GrillOrifice
     {
-        public int Height { get; set; }
-        public int Depth { get; set; }
+        private int _height;
+        private int _depth;
+
+        public int Height
+        {
+            get
+            {
+                return _height;
+            }
+            set
+            {
+                if (value < 5)
+                {
+                    _height = 5;
+                }
+                else if (value < 30)
+                {
+                    _height = value;
+                }
+                else
+                {
+                    _height = 30;
+                }
+            }
+        }
+
+        public int Depth
+        {
+            get
+            {
+                return _depth;
+            }
+            set
+            {
+                if (value < 10)
+                {
+                    _depth = 10;
+                }
+                else if (value < 99)
+                {
+                    _depth = value;
+                }
+                else
+                {
+                    _depth = 99;
+                }
+            }
+        }
 
         internal GrillOrifice(int height, int depth)
         {
@@ -1733,7 +1792,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
+            this.IsIncluded = include;
             _duct_type = ductType;
             _width = width;
             _height = height;
@@ -1750,7 +1809,7 @@ namespace HVACElements
             this.Comments = "";
             this.Name = "duct_1";
             this.AirFlow = 500;
-            this.Include = true;
+            this.IsIncluded = true;
             _duct_type = DuctType.Rectangular;
             _width = 200;
             _height = 200;
@@ -1881,11 +1940,11 @@ namespace HVACElements
             {
                 if (_duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow/3600) / ((_width / 1000.0) * (_height / 1000.0));
+                    return (this.AirFlow/3600.0) / ((_width / 1000.0) * (_height / 1000.0));
                 }
                 else
                 {
-                    return (this.AirFlow/3600) / (0.25*Math.PI*Math.Pow(_diameter/1000.0,2));
+                    return (this.AirFlow/3600.0) / (0.25*Math.PI*Math.Pow(_diameter/1000.0,2));
                 }
             }
         }
@@ -2011,7 +2070,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             base.AirFlow = airFlow;
-            this.Include = include;
+            this.IsIncluded = include;
             _diffuser_type = diffuserType;
             _lenght = lenght;
             _in = new DuctConnection(diffuserIn, base.AirFlow, widthIn, heightIn, diameterIn);
@@ -2024,7 +2083,7 @@ namespace HVACElements
             this.Comments = "";
             this.Name = "dfs_1";
             base.AirFlow = 500;
-            this.Include = true;
+            this.IsIncluded = true;
             _diffuser_type = DiffuserType.Sudden;
             _lenght = 0;
             _in = new DuctConnection(DuctType.Rectangular, 500, 200, 200, 250);
@@ -2172,7 +2231,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
+            this.IsIncluded = include;
             _duct_type = ductType;
             _width = width;
             _height = height;
@@ -2190,7 +2249,7 @@ namespace HVACElements
             this.Comments = "";
             this.Name = "bow_1";
             this.AirFlow = 500;
-            this.Include = true;
+            this.IsIncluded = true;
             _duct_type = DuctType.Rectangular;
             _width = 200;
             _height = 200;
@@ -2293,11 +2352,11 @@ namespace HVACElements
             {
                 if (_duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow/3600) / ((_width / 1000.0) * (_height / 1000.0));
+                    return (this.AirFlow/3600.0) / ((_width / 1000.0) * (_height / 1000.0));
                 }
                 else
                 {
-                    return (this.AirFlow/3600) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
+                    return (this.AirFlow/3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
                 }
             }
         }
@@ -2451,7 +2510,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
+            this.IsIncluded = include;
             _elbow_type = elbowType;
             _tuning_vanes = TurnigVanes;
             _width = width;
@@ -2468,7 +2527,7 @@ namespace HVACElements
             this.Comments = "";
             this.Name = "elb_1";
             this.AirFlow = 800;
-            this.Include = true;
+            this.IsIncluded = true;
             _elbow_type = ElbowType.Straight;
             _tuning_vanes = TurnigVanes.No;
             _width = 400;
@@ -2560,7 +2619,7 @@ namespace HVACElements
         {
             get
             {
-                return (this.AirFlow/3600) / ((_width / 1000.0) * (_height / 1000.0));
+                return (this.AirFlow/3600.0) / ((_width / 1000.0) * (_height / 1000.0));
             }
         }
 
@@ -2700,7 +2759,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             base.AirFlow = airFlowMainIn;
-            this.Include = include;
+            this.IsIncluded = include;
 
             if (airFlowBranch >= airFlowMainIn)
             {
@@ -2720,7 +2779,7 @@ namespace HVACElements
             this.Comments = "";
             this.Name = "jnt_1";
             base.AirFlow = 2400;
-            this.Include = true;
+            this.IsIncluded = true;
             local = new JunctionBranch(DuctType.Rectangular, base.AirFlow, 400, 200, 400, 200, 450, 250, DuctType.Rectangular,
                 BranchType.Straight, 400, 160, 160, 200, 0);
             main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
@@ -2872,7 +2931,7 @@ namespace HVACElements
         private bool _liner_check;
         private PlenumType _plenum_type;
         private DuctConnection _in = null;
-        private DuctConnection _out = null;
+        private DuctConnection _out = null;      
 
         /// <summary>Skrzynka tłumiąca.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -2900,7 +2959,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
+            this.IsIncluded = include;
             _plenum_type = plenumType;
             _width = plenumWidth;
             _height = plenumHeight;
@@ -2910,6 +2969,16 @@ namespace HVACElements
             _liner_thickness = linerThickness;
             _in = new DuctConnection(plenumIn, base.AirFlow, widthIn, heightIn, diameterIn);
             _out = new DuctConnection(plenumOut, base.AirFlow, widthOut, heightOut, diameterOut);
+            _in.DimensionsChanged += _DimensionsChanged;
+            _out.DimensionsChanged += _DimensionsChanged;
+        }
+
+        private void _DimensionsChanged(object sender, EventArgs e)
+        {
+            UpdateLenght();
+            UpdateWidth();
+            UpdateHeight();
+            UpdateDistance();
         }
 
         /// <summary>Skrzynka tłumiąca.</summary>
@@ -2919,7 +2988,7 @@ namespace HVACElements
             this.Comments = "";
             this.Name = "pln_1";
             this.AirFlow = 800;
-            this.Include = true;
+            this.IsIncluded = true;
             _plenum_type = PlenumType.VerticalConnection;
             _width = 400;
             _height = 250;
@@ -2929,6 +2998,8 @@ namespace HVACElements
             _liner_thickness = 25;
             _in = new DuctConnection(DuctType.Round, base.AirFlow, 200, 160, 160);
             _out = new DuctConnection(DuctType.Rectangular, base.AirFlow, 400, 250, 250);
+            _in.DimensionsChanged += _DimensionsChanged;
+            _out.DimensionsChanged += _DimensionsChanged;
         }     
        
         private void UpdateWidth()
@@ -3002,6 +3073,12 @@ namespace HVACElements
             }
             else
             {
+                if (_in.DuctType == DuctType.Rectangular) { temp_in = Math.Min(_in.Height, _in.Width); }
+                else { temp_in = _in.Diameter; }
+
+                if (_out.DuctType == DuctType.Rectangular) { temp_out = Math.Min(_out.Height, _out.Width); }
+                else { temp_out = _out.Diameter; }
+
                 if (Math.Min(temp_in, temp_out) > _lenght)
                 {
                     _lenght = Math.Min(temp_in, temp_out);
@@ -3136,8 +3213,8 @@ namespace HVACElements
                         _width = value;
                     }
                 }
-                UpdateHeight();
                 UpdateLenght();
+                UpdateHeight();
                 UpdateDistance();
             }
         }
@@ -3180,8 +3257,8 @@ namespace HVACElements
                         _height = value;
                     }
                 }
-                UpdateWidth();
                 UpdateLenght();
+                UpdateWidth();
                 UpdateDistance();
             }
         }
@@ -3215,6 +3292,12 @@ namespace HVACElements
                 }
                 else
                 {
+                    if (_in.DuctType == DuctType.Rectangular) { temp_in = Math.Min(_in.Height,_in.Width); }
+                    else { temp_in = _in.Diameter; }
+
+                    if (_out.DuctType == DuctType.Rectangular) { temp_out = Math.Min(_out.Height,_out.Width); }
+                    else { temp_out = _out.Diameter; }
+
                     if (Math.Min(temp_in,temp_out) > value)
                     {
                         _lenght = Math.Min(temp_in, temp_out);
@@ -3306,9 +3389,9 @@ namespace HVACElements
                 {
                     _dl = (int)Math.Ceiling(_lenght - 0.5 * temp);
                 }
+                UpdateLenght();
                 UpdateHeight();
                 UpdateWidth();
-                UpdateLenght();
             }
         }
     }
@@ -3324,41 +3407,61 @@ namespace HVACElements
         private DuctType _duct_type;
         private DamperType _damper_type;
 
+        /// <summary>Przepustnica.</summary>
+        /// <param name="name">Nazwa elementu.</param>
+        /// <param name="comments">Informacje dodatkowe.</param>
+        /// <param name="ductType">Typ króćca podłączeniowego.</param>
+        /// <param name="damperType">Typ przepustnicy.</param>
+        /// <param name="airFlow">Przepływ powietrza przez przepustnicę [m3/h].</param>
+        /// <param name="width">Szerokość króćca przyłączeniowego [mm].</param>
+        /// <param name="height">Wysokość króćca przyłączeniowego [mm].</param>
+        /// <param name="diameter">Średnica króćca przyłączeniowego [mm].</param>
+        /// <param name="bladeAngle">Kąt nachylenia łopatek przepustnicy.</param>
+        /// <param name="bladeNumber">Liczba łopatek.</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
+        /// <returns></returns>
         public Damper(string name, string comments, DamperType damperType, DuctType ductType, int airFlow, int width, int height,
-             int diameter, bool include)
+             int diameter, byte bladeNumber, byte bladeAngle, bool include)
         {
             _type = "damper";
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
+            this.IsIncluded = include;
             _damper_type = damperType;
             _width = width;
             _height = height;
             _diameter = diameter;
             _duct_type = ductType;
+            _blade_number = bladeNumber;
+            _blade_angle = bladeAngle;
         }
 
+        /// <summary>Przepustnica.</summary>
         public Damper()
         {
             _type = "damper";
             this.Comments = "";
             this.Name = "dmp_1";
             this.AirFlow = 800;
-            this.Include = true;
+            this.IsIncluded = true;
             _damper_type = DamperType.SingleBlade;
             _width = 200;
             _height = 200;
             _diameter = 250;
             _duct_type = DuctType.Rectangular;
+            _blade_number = 1;
+            _blade_angle = 0;
         }
 
+        /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
             double[] attn = { 0, 0, 0, 0, 0, 0, 0, 0 };
             return attn;
         }
 
+        /// <summary>Oblicz szum generowany przez element.</summary>
         public override double[] Noise()
         {
             double[] lw = new double[8];
@@ -3389,9 +3492,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    _width = 80;
+                    _width = 100;
                 }
                 else if (value < 2000)
                 {
@@ -3412,9 +3515,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    _height = 80;
+                    _height = 100;
                 }
                 else if (value < 2000)
                 {
@@ -3433,11 +3536,11 @@ namespace HVACElements
             {
                 if (_duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow / 3600) / ((_width / 1000.0) * (_height / 1000.0));
+                    return (this.AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0));
                 }
                 else
                 {
-                    return (this.AirFlow / 3600) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
+                    return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
                 }
             }
         }
@@ -3454,13 +3557,13 @@ namespace HVACElements
                 {
                     _diameter = 80;
                 }
-                else if (value < 2000)
+                else if (value < 1600)
                 {
                     _diameter = value;
                 }
                 else
                 {
-                    _diameter = 2000;
+                    _diameter = 1600;
                 }
             }
         }
@@ -3473,7 +3576,19 @@ namespace HVACElements
             }
             set
             {
-                _blade_number = value;
+                if (_damper_type == DamperType.SingleBlade || _blade_number < 1)
+                {
+                    _blade_number = 1;
+                    _damper_type = DamperType.SingleBlade;
+                }
+                else if (_blade_number < (byte)Math.Ceiling(_width / 20.0))
+                {
+                    _blade_number = value;
+                }
+                else
+                {
+                    _blade_number = (byte)Math.Ceiling(_width / 20.0);
+                }
             }
         }
 
@@ -3485,7 +3600,22 @@ namespace HVACElements
             }
             set
             {
-                _blade_angle = value;
+                byte temp;
+                if (_damper_type == DamperType.SingleBlade) { temp = 70; }
+                else { temp = 80; }
+
+                if (_blade_angle < 0)
+                {
+                    _blade_angle = 0;
+                }
+                else if (_blade_angle < temp)
+                {
+                    _blade_angle = value;
+                }
+                else
+                {
+                    _blade_angle = temp;
+                }
             }
         }
 
@@ -3510,6 +3640,9 @@ namespace HVACElements
             set
             {
                 _damper_type = value;
+
+                if (_damper_type == DamperType.SingleBlade) { _blade_number = 1; }
+                this.BladeAngle = _blade_angle;
             }
         }
     }
@@ -3525,6 +3658,20 @@ namespace HVACElements
         private GrillLocation grill_location;
         private GrillOrifice local = null;
 
+        /// <summary>Kratka wentylacyjna nawiewna/wyciągowa.</summary>
+        /// <param name="name">Nazwa elementu.</param>
+        /// <param name="comments">Informacje dodatkowe.</param>
+        /// <param name="grillType">Typ kratki wentylacyjnej.</param>
+        /// <param name="grillLocation">Lokalizacja kratki wentylacyjnej.</param>
+        /// <param name="airFlow">Przepływ powietrza przez kratkę [m3/h].</param>
+        /// <param name="width">Szerokość króćca przyłączeniowego [mm].</param>
+        /// <param name="height">Wysokość króćca przyłączeniowego [mm].</param>
+        /// <param name="diameter">Średnica króćca przyłączeniowego [mm].</param>
+        /// <param name="orificeDepth">Głębokość otworu żaluzjowego [mm].</param>
+        /// <param name="orificeHeight">Wysokość otworu żaluzjowego [mm].</param>
+        /// <param name="percEffectiveArea">Procentowy udział efektywnej powierzchni netto w stosunku do całkowitej powierzchni przekroju poprzecznego kratki [%]</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
+        /// <returns></returns>
         public Grill(string name, string comments, GrillType grillType, GrillLocation grillLocation, int airFlow, int width, int height,
              int diameter, int orificeDepth, int orificeHeight, int percEffectiveArea, bool include)
         {
@@ -3532,7 +3679,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
+            this.IsIncluded = include;
             grill_type = grillType;
             grill_location = grillLocation;
             _width = width;
@@ -3542,13 +3689,14 @@ namespace HVACElements
             local = new GrillOrifice( orificeHeight, orificeDepth);
         }
 
+        /// <summary>Kratka wentylacyjna nawiewna/wyciągowa.</summary>
         public Grill()
         {
             _type = "grill";
             this.Comments = "";
             this.Name = "grill_1";
             this.AirFlow = 400;
-            this.Include = true;
+            this.IsIncluded = true;
             grill_type = GrillType.RectangularSupplyWire;
             grill_location = GrillLocation.FlushWall;
             _width = 250;
@@ -3558,12 +3706,13 @@ namespace HVACElements
             local = new GrillOrifice(20, 20);
         }
 
+        /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
             double[] attn = new double[8];
             DuctType duct_type;
 
-            if ((Convert.ToInt16(grill_type)<=3) || ((Convert.ToInt16(grill_type) >= 8) && (Convert.ToInt16(grill_type) <= 11)))
+            if ((Convert.ToInt16(grill_type) <= 3) || ((Convert.ToInt16(grill_type) >= 8) && (Convert.ToInt16(grill_type) <= 11)))
             {
                 duct_type = DuctType.Round;
             }
@@ -3583,6 +3732,7 @@ namespace HVACElements
             return attn;
         }
 
+        /// <summary>Oblicz szum generowany przez element.</summary>
         public override double[] Noise()
         {
             double[] lw = new double[8];
@@ -3618,9 +3768,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    _width = 80;
+                    _width = 100;
                 }
                 else if (value < 2000)
                 {
@@ -3641,9 +3791,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    _height = 80;
+                    _height = 100;
                 }
                 else if (value < 2000)
                 {
@@ -3673,11 +3823,11 @@ namespace HVACElements
 
                 if (duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow / 3600) / ((_width / 1000.0) * (_height / 1000.0));
+                    return (this.AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0));
                 }
                 else
                 {
-                    return (this.AirFlow / 3600) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
+                    return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
                 }
             }
         }
@@ -3758,24 +3908,33 @@ namespace HVACElements
             {
                 return local;
             }
-            set
-            {
-                local = value;
-            }
         }
     }
 
     [Serializable()]
     public class Fan: ElementsBase
     {
-        public FanType FanType { get; set; }
+        private FanType _fanType;
         public NoiseEmission NoiseEmission { get; set; }
         public WorkArea WorkArea { get; set; }
-        private double pressure_drop;
-        private byte efficient;
-        private byte blade_number;
-        private int _rpm;       
+        private double _pressure_drop;
+        private byte _efficient;
+        private byte _blade_number;
+        private int _rpm;
 
+        /// <summary>Wentylator.</summary>
+        /// <param name="name">Nazwa elementu.</param>
+        /// <param name="comments">Informacje dodatkowe.</param>
+        /// <param name="fanType">Typ wentylatora.</param>
+        /// <param name="airFlow">Wydajność wentylatora w analizowanym punkcie pracy [m3/h].</param>
+        /// <param name="pressureDrop">Spręż całkowity wentylatora w analizowanym punkcie pracy [Pa].</param>
+        /// <param name="rpm">Prędkość obrotowa wirnika dla założonej wydajności i sprężu [rpm].</param>
+        /// <param name="bladeNumber">Liczba łopatek.</param>
+        /// <param name="efficientDeviation">Względne odchylenie od punktu sprawności szczytowej [%].</param>
+        /// <param name="workArea">Obszar pracy.</param>
+        /// <param name="noiseEmissionDirection">Kierunek emisji hałasu.</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
+        /// <returns></returns>
         public Fan(string name, string comments, FanType fanType, int airFlow, double pressureDrop, int rpm, byte bladeNumber, byte efficientDeviation,
              WorkArea workArea, NoiseEmission noiseEmissionDirection, bool include)
         {
@@ -3783,38 +3942,41 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
-            this.FanType = fanType;
-            pressure_drop = pressureDrop;
+            this.IsIncluded = include;
+            _fanType = fanType;
+            _pressure_drop = pressureDrop;
             _rpm = rpm;
-            blade_number = bladeNumber;
-            efficient = efficientDeviation;
+            _blade_number = bladeNumber;
+            _efficient = efficientDeviation;
             this.NoiseEmission = noiseEmissionDirection;
             this.WorkArea = workArea;
         }
 
+        /// <summary>Wentylator.</summary>
         public Fan()
         {
             _type = "fan";
             this.Comments = "";
             this.Name = "fan_1";
             this.AirFlow = 5000;
-            this.Include = true;
-            this.FanType = FanType.CentrifugalBackwardCurved;
-            pressure_drop = 250;
+            this.IsIncluded = true;
+            _fanType = FanType.CentrifugalBackwardCurved;
+            _pressure_drop = 250;
             _rpm = 1500;
-            blade_number = 12;
-            efficient = 0;
+            _blade_number = 12;
+            _efficient = 0;
             this.NoiseEmission = NoiseEmission.OneDirection;
             this.WorkArea = WorkArea.MaximumEfficiencyArea;
         }
 
+        /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
             double[] attn = { 0, 0, 0, 0, 0, 0, 0, 0 };
             return attn;
         }
 
+        /// <summary>Oblicz szum generowany przez element.</summary>
         public override double[] Noise()
         {
             byte loc;
@@ -3828,18 +3990,42 @@ namespace HVACElements
                 loc = 1;
             }
 
-            return HVACAcoustic.Noise.Fan(this.FanType, base.AirFlow, pressure_drop, _rpm, blade_number, efficient, loc);
+            return HVACAcoustic.Noise.Fan(_fanType, base.AirFlow, _pressure_drop, _rpm, _blade_number, _efficient, loc);
+        }
+
+        public FanType FanType
+        {
+            get
+            {
+                return _fanType;
+            }
+            set
+            {
+                _fanType = value;
+                this.BladeNumber = _blade_number;
+            }
         }
 
         public double PressureDrop
         {
             get
             {
-                return pressure_drop;
+                return _pressure_drop;
             }
             set
             {
-                pressure_drop = value;
+                if (value < 10)
+                {
+                    _pressure_drop = 10;
+                }
+                else if (value < 9999)
+                {
+                    _pressure_drop = value;
+                }
+                else
+                {
+                    _pressure_drop = 9999;
+                }
             }
         }
 
@@ -3847,21 +4033,21 @@ namespace HVACElements
         {
             get
             {
-                return efficient;
+                return _efficient;
             }
             set
             {
                 if (value < 0)
                 {
-                    efficient = 0;
+                    _efficient = 0;
                 }
-                else if (value < 99)
+                else if (value < 50)
                 {
-                    efficient = value;
+                    _efficient = value;
                 }
                 else
                 {
-                    efficient = 99;
+                    _efficient = 50;
                 }
             }
         }
@@ -3870,11 +4056,56 @@ namespace HVACElements
         {
             get
             {
-                return blade_number;
+                return _blade_number;
             }
             set
             {
-                blade_number = value;
+                byte max_temp, min_temp;
+
+                switch (_fanType)
+                {
+                    case FanType.CentrifugalBackwardCurved:
+                        min_temp = 10;
+                        max_temp = 16;
+                        break;
+                    case FanType.CentrifugalRadial:
+                        min_temp = 6;
+                        max_temp = 10;
+                        break;
+                    case FanType.CentrifugalForwardCurved:
+                        min_temp = 24;
+                        max_temp = 64;
+                        break;
+                    case FanType.VaneAxial:
+                        min_temp = 3;
+                        max_temp = 16;
+                        break;
+                    case FanType.TubeAxial:
+                        min_temp = 4;
+                        max_temp = 8;
+                        break;
+                    case FanType.Propeller:
+                        min_temp = 2;
+                        max_temp = 8;
+                        break;
+                    default:
+                        min_temp = 10;
+                        max_temp = 16;
+                        break;
+                }
+
+                if (value < min_temp)
+                {
+                    _blade_number = min_temp;
+                }
+                else if (value < max_temp)
+                {
+                    _blade_number = value;
+                }
+                else
+                {
+                    _blade_number = max_temp;
+                }
             }
         }
 
@@ -3886,7 +4117,18 @@ namespace HVACElements
             }
             set
             {
-                _rpm = value;
+                if (value < 150)
+                {
+                    _rpm = value;
+                }
+                else if (value < 3000)
+                {
+                    _rpm = value;
+                }
+                else
+                {
+                    _rpm = 3000;
+                }
             }
         }
     }
@@ -3909,7 +4151,7 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             base.AirFlow = airFlowMainIn;
-            this.Include = include;
+            this.IsIncluded = include;
 
             if (airFlowMainIn < (airFlowBranchRight + airFlowBranchLeft))
             {
@@ -3941,7 +4183,7 @@ namespace HVACElements
             this.Comments = "";
             this.Name = "djnt_1";
             base.AirFlow = 2600;
-            this.Include = true;
+            this.IsIncluded = true;
 
             container = new DoubleJunctionContaier(DuctType.Rectangular, base.AirFlow, 400, 200, 400, 200, 450, 250,
                 DuctType.Rectangular, BranchType.Straight, 600, 160, 160, 200, 0, BranchType.Straight, 400, 160, 160, 200, 0);
@@ -4147,10 +4389,11 @@ namespace HVACElements
         private int _height;
         private int _diameter;
         private int eff_area;
-        private DuctType duct_type;
-        private SilencerType silencer_type;
+        private DuctType _duct_type;
+        private SilencerType _silencer_type;
         private double _lenght;
 
+        /// <summary>Tłumik akstyczny.</summary>
         /// <param name="name">Nazwa elementu.</param>
         /// <param name="comments">Informacje dodatkowe.</param>
         /// <param name="silencerType">Typ tłumika.</param>
@@ -4169,7 +4412,7 @@ namespace HVACElements
         /// <param name="octaveBand4000Hz">Tłumienie akustyczne w paśmie 4000Hz [dB].</param>
         /// <param name="octaveBand8000Hz">Tłumienie akustyczne w paśmie 8000Hz [dB].</param>
         /// <param name="percEffectiveArea">Procentowy udział efektywnej powierzchnia netto króćca przyłączeniowego [%].</param>
-        /// <param name="include">Uwzględnienie elementu podczas obliczeń.</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
         /// <returns></returns>
         public Silencer(string name, string comments, SilencerType silencerType, DuctType ductType, int airFlow, int width, int height,
              int diameter, double lenght, double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
@@ -4180,9 +4423,9 @@ namespace HVACElements
             this.Comments = comments;
             this.Name = name;
             this.AirFlow = airFlow;
-            this.Include = include;
-            silencer_type = silencerType;
-            duct_type = ductType;
+            this.IsIncluded = include;
+            _silencer_type = silencerType;
+            _duct_type = ductType;
             _width = width;
             _height = height;
             _diameter = diameter;
@@ -4192,15 +4435,16 @@ namespace HVACElements
              octaveBand1000Hz, octaveBand2000Hz, octaveBand4000Hz, octaveBand8000Hz);
         }
 
+        /// <summary>Tłumik akstyczny.</summary>
         public Silencer()
         {
             _type = "silencer";
             this.Comments = "";
             this.Name = "sln_1";
             this.AirFlow = 500;
-            this.Include = true;
-            silencer_type = SilencerType.Absorptive;
-            duct_type = DuctType.Round;
+            this.IsIncluded = true;
+            _silencer_type = SilencerType.Absorptive;
+            _duct_type = DuctType.Round;
             _width = 200;
             _height = 200;
             _diameter = 250;
@@ -4259,13 +4503,13 @@ namespace HVACElements
         {
             get
             {
-                if (duct_type == DuctType.Rectangular)
+                if (_duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow / 3600) / ((_width / 1000.0) * (_height / 1000.0) * eff_area/100.0);
+                    return (this.AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0) * eff_area/100.0);
                 }
                 else
                 {
-                    return (this.AirFlow / 3600) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2) * eff_area / 100.0);
+                    return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2) * eff_area / 100.0);
                 }
             }
         }
@@ -4343,11 +4587,11 @@ namespace HVACElements
         {
             get
             {
-                return duct_type;
+                return _duct_type;
             }
             set
             {
-                duct_type = value;
+                _duct_type = value;
             }
         }
 
@@ -4355,11 +4599,11 @@ namespace HVACElements
         {
             get
             {
-                return silencer_type;
+                return _silencer_type;
             }
             set
             {
-                silencer_type = value;
+                _silencer_type = value;
             }
         }
 
@@ -4369,12 +4613,9 @@ namespace HVACElements
             {
                 return local;
             }
-            set
-            {
-                local = value;
-            }
         }
 
+        /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
             double[] attn = { local.OctaveBand63Hz, local.OctaveBand125Hz, local.OctaveBand250Hz, local.OctaveBand500Hz, local.OctaveBand1000Hz,
@@ -4382,17 +4623,18 @@ namespace HVACElements
             return attn;
         }
 
+        /// <summary>Oblicz szum generowany przez element.</summary>
         public override double[] Noise()
         {
             double[] lw = new double[8];
 
-            if (duct_type == DuctType.Rectangular)
+            if (_duct_type == DuctType.Rectangular)
             {
                 lw = HVACAcoustic.Noise.Silencer(base.AirFlow, _height / 1000.0 * _width / 1000.0, eff_area);
             }
             else
             {
-                if (silencer_type == SilencerType.ParallelBaffles)
+                if (_silencer_type == SilencerType.ParallelBaffles)
                 {
                     lw = HVACAcoustic.Noise.Silencer(base.AirFlow, 0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2), eff_area);
                 }
