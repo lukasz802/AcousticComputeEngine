@@ -3153,7 +3153,7 @@ namespace HVACAcoustic
 
         public static double[] PointCorrection(double t, double rh, double q, double r, double[] rm, double w, double l, double h)
         {
-            //q-wpółczynnik kierunkowy
+            //q-wpółczynnik kierunkowy,
             //w-szerokość powmieszczenia, m
             //l- długość pomieszczenia, m
             //h-wysokość pomieszczenia, m

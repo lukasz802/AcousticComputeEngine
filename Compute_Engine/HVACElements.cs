@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using HVACAcoustic;
+using System;
 using System.Collections.Generic;
-using HVACAcoustic;
+using System.Linq;
 
 namespace HVACElements
 {
@@ -68,6 +68,20 @@ namespace HVACElements
     {
         MaximumEfficiencyArea = 0,
         OutOffMaximumEfficiencyArea = 1
+    }
+
+    public enum NoiseLocation
+    {
+        RoomCenter = 1,
+        WallCenter = 2,
+        WallCorner = 3,
+        WallEdge = 4,
+        CeilingCenter = 5,
+        CeilingCorner = 6,
+        CeilingEdge = 7,
+        FloorCenter = 8,
+        FloorCorner = 9,
+        FloorEdge = 10
     }
 
     internal enum JunctionConnectionSide
@@ -477,8 +491,8 @@ namespace HVACElements
         private int diameter_branch_left;
         private int rnd_branch_left;
         private BranchType branch_type_left;
-        private DuctConnection _in = null;
-        private DuctConnection _out = null;
+        private readonly DuctConnection _in = null;
+        private readonly DuctConnection _out = null;
 
         public DoubleJunctionContaier(DuctType ductTypeMain, int airFlowMain, int widthMainIn, int widthMainOut, int heightMainIn, int heightMainOut,
             int diameterMainIn, int diameterMainOut, DuctType ductTypeBranch, BranchType branchTypeRight, int airFlowBranchRight,
@@ -742,28 +756,373 @@ namespace HVACElements
     }
 
     [Serializable()]
-    public class SilencerAttenuation
+    public struct SoundAttenuation
     {
-        public double OctaveBand63Hz { get; set; }
-        public double OctaveBand125Hz { get; set; }
-        public double OctaveBand250Hz { get; set; }
-        public double OctaveBand500Hz { get; set; }
-        public double OctaveBand1000Hz { get; set; }
-        public double OctaveBand2000Hz { get; set; }
-        public double OctaveBand4000Hz { get; set; }
-        public double OctaveBand8000Hz { get; set; }
+        private int _octaveBand63Hz;
+        private int _octaveBand125Hz;
+        private int _octaveBand250Hz;
+        private int _octaveBand500Hz;
+        private int _octaveBand1000Hz;
+        private int _octaveBand2000Hz;
+        private int _octaveBand4000Hz;
+        private int _octaveBand8000Hz;
 
-        internal SilencerAttenuation(double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
+        public SoundAttenuation(int octaveBand63Hz, int octaveBand125Hz, int octaveBand250Hz, int octaveBand500Hz,
+            int octaveBand1000Hz, int octaveBand2000Hz, int octaveBand4000Hz, int octaveBand8000Hz)
+        {
+            _octaveBand63Hz = octaveBand63Hz;
+            _octaveBand125Hz = octaveBand125Hz;
+            _octaveBand250Hz = octaveBand250Hz;
+            _octaveBand500Hz = octaveBand500Hz;
+            _octaveBand1000Hz = octaveBand1000Hz;
+            _octaveBand2000Hz = octaveBand2000Hz;
+            _octaveBand4000Hz = octaveBand4000Hz;
+            _octaveBand8000Hz = octaveBand8000Hz;
+        }
+
+        public int OctaveBand63Hz
+        {
+            get { return _octaveBand63Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand63Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand63Hz = value;
+                }
+                else
+                {
+                    _octaveBand63Hz = 99;
+                }
+            }
+        }
+
+        public int OctaveBand125Hz
+        {
+            get { return _octaveBand125Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand125Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand125Hz = value;
+                }
+                else
+                {
+                    _octaveBand125Hz = 99;
+                }
+            }
+        }
+
+        public int OctaveBand250Hz
+        {
+            get { return _octaveBand250Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand250Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand250Hz = value;
+                }
+                else
+                {
+                    _octaveBand250Hz = 99;
+                }
+            }
+        }
+
+        public int OctaveBand500Hz
+        {
+            get { return _octaveBand500Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand500Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand500Hz = value;
+                }
+                else
+                {
+                    _octaveBand500Hz = 99;
+                }
+            }
+        }
+
+        public int OctaveBand1000Hz
+        {
+            get { return _octaveBand1000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand1000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand1000Hz = value;
+                }
+                else
+                {
+                    _octaveBand1000Hz = 99;
+                }
+            }
+        }
+
+        public int OctaveBand2000Hz
+        {
+            get { return _octaveBand2000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand2000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand2000Hz = value;
+                }
+                else
+                {
+                    _octaveBand2000Hz = 99;
+                }
+            }
+        }
+
+        public int OctaveBand4000Hz
+        {
+            get { return _octaveBand4000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand4000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand4000Hz = value;
+                }
+                else
+                {
+                    _octaveBand4000Hz = 99;
+                }
+            }
+        }
+
+        public int OctaveBand8000Hz
+        {
+            get { return _octaveBand8000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand8000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand8000Hz = value;
+                }
+                else
+                {
+                    _octaveBand8000Hz = 99;
+                }
+            }
+        }
+    }
+
+    public struct SoundAbsorption
+    {
+        private double _octaveBand63Hz;
+        private double _octaveBand125Hz;
+        private double _octaveBand250Hz;
+        private double _octaveBand500Hz;
+        private double _octaveBand1000Hz;
+        private double _octaveBand2000Hz;
+        private double _octaveBand4000Hz;
+        private double _octaveBand8000Hz;
+
+        public SoundAbsorption(double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
             double octaveBand1000Hz, double octaveBand2000Hz, double octaveBand4000Hz, double octaveBand8000Hz)
         {
-            this.OctaveBand63Hz = octaveBand63Hz;
-            this.OctaveBand125Hz = octaveBand125Hz;
-            this.OctaveBand250Hz = octaveBand250Hz;
-            this.OctaveBand500Hz = octaveBand500Hz;
-            this.OctaveBand1000Hz = octaveBand1000Hz;
-            this.OctaveBand2000Hz = octaveBand2000Hz;
-            this.OctaveBand4000Hz = octaveBand4000Hz;
-            this.OctaveBand8000Hz = octaveBand8000Hz;
+            _octaveBand63Hz = octaveBand63Hz;
+            _octaveBand125Hz = octaveBand125Hz;
+            _octaveBand250Hz = octaveBand250Hz;
+            _octaveBand500Hz = octaveBand500Hz;
+            _octaveBand1000Hz = octaveBand1000Hz;
+            _octaveBand2000Hz = octaveBand2000Hz;
+            _octaveBand4000Hz = octaveBand4000Hz;
+            _octaveBand8000Hz = octaveBand8000Hz;
+        }
+
+        public double OctaveBand63Hz
+        {
+            get { return _octaveBand63Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand63Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand63Hz = value;
+                }
+                else
+                {
+                    _octaveBand63Hz = 99;
+                }
+            }
+        }
+
+        public double OctaveBand125Hz
+        {
+            get { return _octaveBand125Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand125Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand125Hz = value;
+                }
+                else
+                {
+                    _octaveBand125Hz = 99;
+                }
+            }
+        }
+
+        public double OctaveBand250Hz
+        {
+            get { return _octaveBand250Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand250Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand250Hz = value;
+                }
+                else
+                {
+                    _octaveBand250Hz = 99;
+                }
+            }
+        }
+
+        public double OctaveBand500Hz
+        {
+            get { return _octaveBand500Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand500Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand500Hz = value;
+                }
+                else
+                {
+                    _octaveBand500Hz = 99;
+                }
+            }
+        }
+
+        public double OctaveBand1000Hz
+        {
+            get { return _octaveBand1000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand1000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand1000Hz = value;
+                }
+                else
+                {
+                    _octaveBand1000Hz = 99;
+                }
+            }
+        }
+
+        public double OctaveBand2000Hz
+        {
+            get { return _octaveBand2000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand2000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand2000Hz = value;
+                }
+                else
+                {
+                    _octaveBand2000Hz = 99;
+                }
+            }
+        }
+
+        public double OctaveBand4000Hz
+        {
+            get { return _octaveBand4000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand4000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand4000Hz = value;
+                }
+                else
+                {
+                    _octaveBand4000Hz = 99;
+                }
+            }
+        }
+
+        public double OctaveBand8000Hz
+        {
+            get { return _octaveBand8000Hz; }
+            set
+            {
+                if (value < 0)
+                {
+                    _octaveBand8000Hz = 0;
+                }
+                else if (value < 99)
+                {
+                    _octaveBand8000Hz = value;
+                }
+                else
+                {
+                    _octaveBand8000Hz = 99;
+                }
+            }
         }
     }
 
@@ -771,7 +1130,7 @@ namespace HVACElements
     public class DoubleJunctionBranch : IBranch
     {
         private DoubleJunctionContaier container = null;
-        private Branch branch;
+        private readonly Branch branch;
         private JunctionConnectionSide connectionSide;
 
         internal DoubleJunctionBranch(DoubleJunctionContaier doubleJunctionContaier, Branch doubleJunctionBranch)
@@ -1237,40 +1596,40 @@ namespace HVACElements
     [Serializable()]
     public class DuctConnection: IDimensions
     {
-        private DuctType duct_type;
-        private int width;
-        private int height;
-        private int diameter;
-        private int airflow;
+        private DuctType _duct_type;
+        private int _width;
+        private int _height;
+        private int _diameter;
+        private int _airflow;
 
         internal DuctConnection(DuctType ductType, int airFlow, int w, int h, int d)
         {
-            duct_type = ductType;
-            airflow = airFlow;
-            width = w;
-            height = h;
-            diameter = d;
+            _duct_type = ductType;
+            _airflow = airFlow;
+            _width = w;
+            _height = h;
+            _diameter = d;
         }
 
         public int Width
         {
             get
             {
-                return width;
+                return _width;
             }
             set
             {
                 if (value < 100)
                 {
-                    width = 100;
+                    _width = 100;
                 }
                 else if (value < 2000)
                 {
-                    width = value;
+                    _width = value;
                 }
                 else
                 {
-                    width = 2000;
+                    _width = 2000;
                 }
                 OnDimensionsChanged();
             }
@@ -1280,21 +1639,21 @@ namespace HVACElements
         {
             get
             {
-                return height;
+                return _height;
             }
             set
             {
                 if (value < 100)
                 {
-                    height = 100;
+                    _height = 100;
                 }
                 else if (value < 2000)
                 {
-                    height = value;
+                    _height = value;
                 }
                 else
                 {
-                    height = 2000;
+                    _height = 2000;
                 }
                 OnDimensionsChanged();
             }
@@ -1304,21 +1663,21 @@ namespace HVACElements
         {
             get
             {
-                return diameter;
+                return _diameter;
             }
             set
             {
                 if (value < 80)
                 {
-                    diameter = 80;
+                    _diameter = 80;
                 }
                 else if (value < 1600)
                 {
-                    diameter = value;
+                    _diameter = value;
                 }
                 else
                 {
-                    diameter = 1600;
+                    _diameter = 1600;
                 }
                 OnDimensionsChanged();
             }
@@ -1328,13 +1687,13 @@ namespace HVACElements
         {
             get
             {
-                if (duct_type == DuctType.Rectangular)
+                if (_duct_type == DuctType.Rectangular)
                 {
-                    return (airflow / 3600.0) / ((width / 1000.0) * (height / 1000.0));
+                    return (_airflow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0));
                 }
                 else
                 {
-                    return (airflow / 3600.0) / (0.25 * Math.PI * Math.Pow(diameter / 1000.0, 2));
+                    return (_airflow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
                 }
             }
         }
@@ -1343,11 +1702,11 @@ namespace HVACElements
         {
             get
             {
-                return duct_type;
+                return _duct_type;
             }
             set
             {
-                duct_type = value;
+                _duct_type = value;
             }
         }
 
@@ -1355,17 +1714,17 @@ namespace HVACElements
         {
             get
             {
-                return airflow;
+                return _airflow;
             }
             set
             {
                 if (value < 1)
                 {
-                    airflow = 1;
+                    _airflow = 1;
                 }
                 else
                 {
-                    airflow = value;
+                    _airflow = value;
                 }
             }
         }
@@ -1384,37 +1743,37 @@ namespace HVACElements
     [Serializable()]
     public class JunctionMain: IDimensions
     {
-        private Junction local_junction = null;
-        private JunctionConnectionSide? junction_connection_side = null;
+        private Junction _local_junction = null;
+        private JunctionConnectionSide? _junction_connection_side = null;
 
         internal JunctionMain(Junction baseJunction, JunctionConnectionSide junctionConnectionSide)
         {
-            junction_connection_side = junctionConnectionSide;
-            local_junction = baseJunction;
+            _junction_connection_side = junctionConnectionSide;
+            _local_junction = baseJunction;
         }
 
         public int Width
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_junction.Branch.In.Width;
+                    return _local_junction.Branch.In.Width;
                 }
                 else
                 {
-                    return local_junction.Branch.Out.Width;
+                    return _local_junction.Branch.Out.Width;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_junction.Branch.In.Width = value;
+                    _local_junction.Branch.In.Width = value;
                 }
                 else
                 {
-                    local_junction.Branch.Out.Width = value;
+                    _local_junction.Branch.Out.Width = value;
                 }
             }
         }
@@ -1423,24 +1782,24 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_junction.Branch.In.Height;
+                    return _local_junction.Branch.In.Height;
                 }
                 else
                 {
-                    return local_junction.Branch.Out.Height;
+                    return _local_junction.Branch.Out.Height;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_junction.Branch.In.Height = value;
+                    _local_junction.Branch.In.Height = value;
                 }
                 else
                 {
-                    local_junction.Branch.Out.Height = value;
+                    _local_junction.Branch.Out.Height = value;
                 }
             }
         }
@@ -1449,24 +1808,24 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_junction.Branch.In.Diameter;
+                    return _local_junction.Branch.In.Diameter;
                 }
                 else
                 {
-                    return local_junction.Branch.Out.Diameter;
+                    return _local_junction.Branch.Out.Diameter;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_junction.Branch.In.Diameter = value;
+                    _local_junction.Branch.In.Diameter = value;
                 }
                 else
                 {
-                    local_junction.Branch.Out.Diameter = value;
+                    _local_junction.Branch.Out.Diameter = value;
                 }
             }
         }
@@ -1475,26 +1834,26 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    if (local_junction.Branch.In.DuctType == DuctType.Rectangular)
+                    if (_local_junction.Branch.In.DuctType == DuctType.Rectangular)
                     {
-                        return (local_junction.Branch.In.AirFlow / 3600.0) / ((local_junction.Branch.In.Width / 1000.0) * (local_junction.Branch.In.Height / 1000.0));
+                        return (_local_junction.Branch.In.AirFlow / 3600.0) / ((_local_junction.Branch.In.Width / 1000.0) * (_local_junction.Branch.In.Height / 1000.0));
                     }
                     else
                     {
-                        return (local_junction.Branch.In.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(local_junction.Branch.In.Diameter / 1000.0, 2));
+                        return (_local_junction.Branch.In.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_local_junction.Branch.In.Diameter / 1000.0, 2));
                     }
                 }
                 else
                 {
-                    if (local_junction.Branch.Out.DuctType == DuctType.Rectangular)
+                    if (_local_junction.Branch.Out.DuctType == DuctType.Rectangular)
                     {
-                        return (local_junction.Branch.Out.AirFlow / 3600.0) / ((local_junction.Branch.Out.Width / 1000.0) * (local_junction.Branch.Out.Height / 1000.0));
+                        return (_local_junction.Branch.Out.AirFlow / 3600.0) / ((_local_junction.Branch.Out.Width / 1000.0) * (_local_junction.Branch.Out.Height / 1000.0));
                     }
                     else
                     {
-                        return (local_junction.Branch.Out.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(local_junction.Branch.Out.Diameter / 1000.0, 2));
+                        return (_local_junction.Branch.Out.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_local_junction.Branch.Out.Diameter / 1000.0, 2));
                     }
                 }
             }
@@ -1504,19 +1863,19 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_junction.Branch.In.DuctType;
+                    return _local_junction.Branch.In.DuctType;
                 }
                 else
                 {
-                    return local_junction.Branch.Out.DuctType;
+                    return _local_junction.Branch.Out.DuctType;
                 }
             }
             set
             {
-                local_junction.Branch.In.DuctType = value;
-                local_junction.Branch.Out.DuctType = value;
+                _local_junction.Branch.In.DuctType = value;
+                _local_junction.Branch.Out.DuctType = value;
             }
         }
 
@@ -1524,26 +1883,26 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_junction.Branch.In.AirFlow;
+                    return _local_junction.Branch.In.AirFlow;
                 }
                 else
                 {
-                    return local_junction.Branch.Out.AirFlow;
+                    return _local_junction.Branch.Out.AirFlow;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_junction.Branch.JunctionConnectionSide = JunctionConnectionSide.Inlet;
-                    local_junction.AirFlow = value;
+                    _local_junction.Branch.JunctionConnectionSide = JunctionConnectionSide.Inlet;
+                    _local_junction.AirFlow = value;
                 }
                 else
                 {
-                    local_junction.Branch.JunctionConnectionSide = JunctionConnectionSide.Outlet;
-                    local_junction.AirFlow = value + local_junction.Branch.AirFlow;
+                    _local_junction.Branch.JunctionConnectionSide = JunctionConnectionSide.Outlet;
+                    _local_junction.AirFlow = value + _local_junction.Branch.AirFlow;
                 }
             }
         }
@@ -1552,37 +1911,37 @@ namespace HVACElements
     [Serializable()]
     public class DoubleJunctionMain : IDimensions
     {
-        private DoubleJunction local_djunction = null;
-        private JunctionConnectionSide? junction_connection_side = null;
+        private DoubleJunction _local_djunction = null;
+        private JunctionConnectionSide? _junction_connection_side = null;
 
         internal DoubleJunctionMain(DoubleJunction baseDoubleJunction, JunctionConnectionSide junctionConnectionSide)
         {
-            junction_connection_side = junctionConnectionSide;
-            local_djunction = baseDoubleJunction;
+            _junction_connection_side = junctionConnectionSide;
+            _local_djunction = baseDoubleJunction;
         }
 
         public int Width
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_djunction.Container.In.Width;
+                    return _local_djunction.Container.In.Width;
                 }
                 else
                 {
-                    return local_djunction.Container.Out.Width;
+                    return _local_djunction.Container.Out.Width;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_djunction.Container.In.Width = value;
+                    _local_djunction.Container.In.Width = value;
                 }
                 else
                 {
-                    local_djunction.Container.Out.Width = value;
+                    _local_djunction.Container.Out.Width = value;
                 }
             }
         }
@@ -1591,24 +1950,24 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_djunction.Container.In.Height;
+                    return _local_djunction.Container.In.Height;
                 }
                 else
                 {
-                    return local_djunction.Container.Out.Height;
+                    return _local_djunction.Container.Out.Height;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_djunction.Container.In.Height = value;
+                    _local_djunction.Container.In.Height = value;
                 }
                 else
                 {
-                    local_djunction.Container.Out.Height = value;
+                    _local_djunction.Container.Out.Height = value;
                 }
             }
         }
@@ -1617,24 +1976,24 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_djunction.Container.In.Diameter;
+                    return _local_djunction.Container.In.Diameter;
                 }
                 else
                 {
-                    return local_djunction.Container.Out.Diameter;
+                    return _local_djunction.Container.Out.Diameter;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_djunction.Container.In.Diameter = value;
+                    _local_djunction.Container.In.Diameter = value;
                 }
                 else
                 {
-                    local_djunction.Container.Out.Diameter = value;
+                    _local_djunction.Container.Out.Diameter = value;
                 }
             }
         }
@@ -1643,30 +2002,30 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    if (local_djunction.Container.In.DuctType == DuctType.Rectangular)
+                    if (_local_djunction.Container.In.DuctType == DuctType.Rectangular)
                     {
-                        return (local_djunction.Container.In.AirFlow / 3600.0) / ((local_djunction.Container.In.Width / 1000.0)
-                            * (local_djunction.Container.In.Height / 1000.0));
+                        return (_local_djunction.Container.In.AirFlow / 3600.0) / ((_local_djunction.Container.In.Width / 1000.0)
+                            * (_local_djunction.Container.In.Height / 1000.0));
                     }
                     else
                     {
-                        return (local_djunction.Container.In.AirFlow / 3600.0) /
-                            (0.25 * Math.PI * Math.Pow(local_djunction.Container.In.Diameter / 1000.0, 2));
+                        return (_local_djunction.Container.In.AirFlow / 3600.0) /
+                            (0.25 * Math.PI * Math.Pow(_local_djunction.Container.In.Diameter / 1000.0, 2));
                     }
                 }
                 else
                 {
-                    if (local_djunction.Container.Out.DuctType == DuctType.Rectangular)
+                    if (_local_djunction.Container.Out.DuctType == DuctType.Rectangular)
                     {
-                        return (local_djunction.Container.Out.AirFlow / 3600.0) /
-                            ((local_djunction.Container.Out.Width / 1000.0) * (local_djunction.Container.Out.Height / 1000.0));
+                        return (_local_djunction.Container.Out.AirFlow / 3600.0) /
+                            ((_local_djunction.Container.Out.Width / 1000.0) * (_local_djunction.Container.Out.Height / 1000.0));
                     }
                     else
                     {
-                        return (local_djunction.Container.Out.AirFlow / 3600.0) /
-                            (0.25 * Math.PI * Math.Pow(local_djunction.Container.Out.Diameter / 1000.0, 2));
+                        return (_local_djunction.Container.Out.AirFlow / 3600.0) /
+                            (0.25 * Math.PI * Math.Pow(_local_djunction.Container.Out.Diameter / 1000.0, 2));
                     }
                 }
             }
@@ -1676,28 +2035,28 @@ namespace HVACElements
         {
             get
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    return local_djunction.Container.In.AirFlow;
+                    return _local_djunction.Container.In.AirFlow;
                 }
                 else
                 {
-                    return local_djunction.Container.Out.AirFlow;
+                    return _local_djunction.Container.Out.AirFlow;
                 }
             }
             set
             {
-                if (junction_connection_side == JunctionConnectionSide.Inlet)
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
                 {
-                    local_djunction.BranchRight.JunctionConnectionSide = JunctionConnectionSide.Inlet;
-                    local_djunction.BranchLeft.JunctionConnectionSide = JunctionConnectionSide.Inlet;
-                    local_djunction.AirFlow = value;
+                    _local_djunction.BranchRight.JunctionConnectionSide = JunctionConnectionSide.Inlet;
+                    _local_djunction.BranchLeft.JunctionConnectionSide = JunctionConnectionSide.Inlet;
+                    _local_djunction.AirFlow = value;
                 }
                 else
                 {
-                    local_djunction.BranchRight.JunctionConnectionSide = JunctionConnectionSide.Outlet;
-                    local_djunction.BranchLeft.JunctionConnectionSide = JunctionConnectionSide.Outlet;
-                    local_djunction.AirFlow = value + local_djunction.BranchRight.AirFlow + local_djunction.BranchLeft.AirFlow;
+                    _local_djunction.BranchRight.JunctionConnectionSide = JunctionConnectionSide.Outlet;
+                    _local_djunction.BranchLeft.JunctionConnectionSide = JunctionConnectionSide.Outlet;
+                    _local_djunction.AirFlow = value + _local_djunction.BranchRight.AirFlow + _local_djunction.BranchLeft.AirFlow;
                 }
             }
         }
@@ -1769,7 +2128,7 @@ namespace HVACElements
         private int _height;
         private int _diameter;
         private double _lenght;
-        private int _liner_thickness;
+        private readonly int _liner_thickness;
         private bool _liner_check;
         private DuctType _duct_type;
 
@@ -1807,7 +2166,7 @@ namespace HVACElements
         {
             _type = "duct";
             this.Comments = "";
-            this.Name = "duct_1";
+            this.Name = "duct_";
             this.AirFlow = 500;
             this.IsIncluded = true;
             _duct_type = DuctType.Rectangular;
@@ -1963,7 +2322,7 @@ namespace HVACElements
                 }
                 else
                 {
-                    _lenght = Math.Round(value,2);
+                    _lenght = Math.Round(value, 2);
                 }
             }
         }
@@ -2589,6 +2948,8 @@ namespace HVACElements
                 {
                     _width = 2000;
                 }
+                this.Rouning = _rnd;
+                this.VanesNumber = _vanes_number;
             }
         }
 
@@ -2612,6 +2973,8 @@ namespace HVACElements
                 {
                     _height = 2000;
                 }
+                this.Rouning = _rnd;
+                this.VanesNumber = _vanes_number;
             }
         }
 
@@ -2635,34 +2998,35 @@ namespace HVACElements
                 {
                     if (value < 1)
                     {
-                        _rnd = 1;
+                        _vanes_number = 1;
                     }
-                    else if (Math.Round(2.13 * Math.Pow(((double)_rnd / (double)_width), -1) - 1) >= value)
+                    else if (Math.Round(2.13 * Math.Pow((_rnd/1000.0 / _width/1000.0), -1) - 1) >= value)
                     {
-                        _rnd = value;
+                        _vanes_number = value;
                     }
                     else
                     {
-                        _rnd = (byte)Math.Round(2.13 * Math.Pow(((double)_rnd / (double)_width), -1) - 1);
+                        _vanes_number = (byte)Math.Round(2.13 * Math.Pow((_rnd/1000.0 / _width/1000.0), -1) - 1);
                     }
                 }
                 else
                 {
-                    double dh = 2 * (double)_height * (double)_width / ((double)_height + (double)_width);
+                    double dh = 2 * _height/1000.0 * _width/1000.0 / (_height/1000.0 + _width/1000.0);
 
                     if (value < 1)
                     {
-                        _rnd = 1;
+                        _vanes_number = 1;
                     }
-                    else if (Math.Round(2.13 * Math.Pow((0.35 * dh / ((double)_width * Math.Pow(2, 0.5))), (-1)) - 1) >= value)
+                    else if (Math.Round(2.13 * Math.Pow((0.35 * dh / (_width/1000.0 * Math.Pow(2, 0.5))), (-1)) - 1) >= value)
                     {
-                        _rnd = value;
+                        _vanes_number = value;
                     }
                     else
                     {
-                        _rnd = (byte)Math.Round(2.13 * Math.Pow((0.35 * dh / ((double)_width * Math.Pow(2, 0.5))), (-1)) - 1);
+                        _vanes_number = (byte)Math.Round(2.13 * Math.Pow((0.35 * dh / (_width/1000.0 * Math.Pow(2, 0.5))), (-1)) - 1);
                     }
                 }
+
             }
         }
 
@@ -2686,6 +3050,7 @@ namespace HVACElements
                 {
                     _rnd = (int)Math.Ceiling(0.6 * _width);
                 }
+                this.VanesNumber = _vanes_number;
             }
         }
 
@@ -2729,9 +3094,9 @@ namespace HVACElements
     [Serializable()]
     public class Junction : ElementsBase
     {
-        private JunctionBranch local = null;
-        private JunctionMain main_in = null;
-        private JunctionMain main_out = null;
+        private JunctionBranch _local = null;
+        private JunctionMain _main_in = null;
+        private JunctionMain _main_out = null;
 
         /// <summary>Trójnik.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -2740,6 +3105,7 @@ namespace HVACElements
         /// <param name="ductTypeBranch">Typ króćca odgałęźnego.</param>
         /// <param name="airFlowMainIn">Przepływ powietrza na wlocie do elementu [m3/h].</param>
         /// <param name="airFlowBranch">Przepływ powietrza przez odgałęzienie [m3/h].</param>
+        /// <param name="branchType">Typ odgałęzienia.</param>
         /// <param name="widthMainIn">Szerokość głównego króćca podłączeniowego od strony wlotowej [mm].</param>
         /// <param name="heightMainIn">Wysokość głównego króćca podłączeniowego od strony wlotowej [mm].</param>
         /// <param name="diameterMainIn">Średnica głównego króćca podłączeniowego od strony wlotowej [mm].</param>
@@ -2766,10 +3132,10 @@ namespace HVACElements
                 airFlowBranch = airFlowMainIn;
             }
 
-            local = new JunctionBranch(ductTypeMainIn, base.AirFlow, widthMainIn, widthMainOut, heightMainIn, heightMainOut, diameterMainIn, diameterMainOut,
+            _local = new JunctionBranch(ductTypeMainIn, base.AirFlow, widthMainIn, widthMainOut, heightMainIn, heightMainOut, diameterMainIn, diameterMainOut,
                 ductTypeBranch, branchType, airFlowBranch, widthBranch, heightBranch, diameterBranch, roundingBranch);
-            main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
-            main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
+            _main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
+            _main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
         }
 
         /// <summary>Trójnik.</summary>
@@ -2780,17 +3146,17 @@ namespace HVACElements
             this.Name = "jnt_1";
             base.AirFlow = 2400;
             this.IsIncluded = true;
-            local = new JunctionBranch(DuctType.Rectangular, base.AirFlow, 400, 200, 400, 200, 450, 250, DuctType.Rectangular,
+            _local = new JunctionBranch(DuctType.Rectangular, base.AirFlow, 400, 200, 400, 200, 450, 250, DuctType.Rectangular,
                 BranchType.Straight, 400, 160, 160, 200, 0);
-            main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
-            main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
+            _main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
+            _main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
         }
 
         public JunctionBranch Branch
         {
             get
             {
-                return local;
+                return _local;
             }
         }
 
@@ -2798,7 +3164,7 @@ namespace HVACElements
         {
             get
             {
-                return main_in;
+                return _main_in;
             }
         }
 
@@ -2806,7 +3172,7 @@ namespace HVACElements
         {
             get
             {
-                return main_out;
+                return _main_out;
             }
         }
 
@@ -2819,14 +3185,14 @@ namespace HVACElements
             set
             {
                 base.AirFlow = value;
-                local.In.AirFlow = value;
+                _local.In.AirFlow = value;
 
-                if (local.AirFlow >= value)
+                if (_local.AirFlow >= value)
                 {
-                    local.AirFlow = value;
+                    _local.AirFlow = value;
                 }
 
-                local.Out.AirFlow = value - local.AirFlow;
+                _local.Out.AirFlow = value - _local.AirFlow;
             }
         }
 
@@ -2835,26 +3201,26 @@ namespace HVACElements
         {
             double[] attn = new double[8];
 
-            if (main_in.DuctType == DuctType.Rectangular && local.DuctType == DuctType.Rectangular)
+            if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Rectangular)
             {
-                attn = HVACAcoustic.Attenuation.JunctionMainRectangularBranchRectangular(HVACAcoustic.Branch.Main, local.BranchType, main_in.Width / 1000.0,main_in.Height / 1000.0,
-                        main_out.Width / 1000.0, main_out.Height / 1000.0, local.Width / 1000.0, local.Height / 1000.0);
+                attn = HVACAcoustic.Attenuation.JunctionMainRectangularBranchRectangular(HVACAcoustic.Branch.Main, _local.BranchType, _main_in.Width / 1000.0,_main_in.Height / 1000.0,
+                        _main_out.Width / 1000.0, _main_out.Height / 1000.0, _local.Width / 1000.0, _local.Height / 1000.0);
             }
-            else if (main_in.DuctType == DuctType.Rectangular && local.DuctType == DuctType.Round)
+            else if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Round)
             {
-                attn = HVACAcoustic.Attenuation.JunctionMainRectangularBranchRound(HVACAcoustic.Branch.Main, local.BranchType, main_in.Width / 1000.0, main_in.Height / 1000.0,
-                        main_out.Width / 1000.0, main_out.Height / 1000.0, local.Diameter / 1000.0);
+                attn = HVACAcoustic.Attenuation.JunctionMainRectangularBranchRound(HVACAcoustic.Branch.Main, _local.BranchType, _main_in.Width / 1000.0, _main_in.Height / 1000.0,
+                        _main_out.Width / 1000.0, _main_out.Height / 1000.0, _local.Diameter / 1000.0);
 
             }
-            else if (main_in.DuctType == DuctType.Round && local.DuctType == DuctType.Rectangular)
+            else if (_main_in.DuctType == DuctType.Round && _local.DuctType == DuctType.Rectangular)
             {
-                attn = HVACAcoustic.Attenuation.JunctionMainRoundBranchRectangular(HVACAcoustic.Branch.Main, local.BranchType, main_in.Diameter / 1000.0,
-                        main_out.Diameter / 1000.0, local.Width / 1000.0, local.Height / 1000.0);
+                attn = HVACAcoustic.Attenuation.JunctionMainRoundBranchRectangular(HVACAcoustic.Branch.Main, _local.BranchType, _main_in.Diameter / 1000.0,
+                        _main_out.Diameter / 1000.0, _local.Width / 1000.0, _local.Height / 1000.0);
             }
             else
             {
-                attn = HVACAcoustic.Attenuation.JunctionMainRoundBranchRound(HVACAcoustic.Branch.Main, local.BranchType, main_in.Diameter / 1000.0,
-                        main_out.Diameter / 1000.0, local.Diameter / 1000.0);
+                attn = HVACAcoustic.Attenuation.JunctionMainRoundBranchRound(HVACAcoustic.Branch.Main, _local.BranchType, _main_in.Diameter / 1000.0,
+                        _main_out.Diameter / 1000.0, _local.Diameter / 1000.0);
             }
             return attn;
         }
@@ -2864,56 +3230,56 @@ namespace HVACElements
         {
             double[] lw = new double[8];
 
-            if (main_in.DuctType == DuctType.Rectangular && local.DuctType == DuctType.Rectangular)
+            if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Rectangular)
             {
-                if (local.BranchType == BranchType.Rounded)
+                if (_local.BranchType == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, local.Width / 1000.0 * local.Height / 1000.0,
-                                   main_in.Width / 1000.0 * main_in.Height / 1000.0, local.Rounding / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
+                                   _main_in.Width / 1000.0 * _main_in.Height / 1000.0, _local.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, local.Width / 1000.0 * local.Height / 1000.0,
-               main_in.Width / 1000.0 * main_in.Height / 1000.0, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
+               _main_in.Width / 1000.0 * _main_in.Height / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (main_in.DuctType == DuctType.Rectangular && local.DuctType == DuctType.Round)
+            else if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Round)
             {
-                if (local.BranchType == BranchType.Rounded)
+                if (_local.BranchType == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, Math.Pow(local.Diameter / 1000.0, 2) * Math.PI * 0.25,
-                                   main_in.Width / 1000.0 * main_in.Height / 1000.0, local.Rounding / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter / 1000.0, 2) * Math.PI * 0.25,
+                                   _main_in.Width / 1000.0 * _main_in.Height / 1000.0, _local.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, Math.Pow(local.Diameter / 1000.0, 2) * Math.PI * 0.25,
-                                   main_in.Width / 1000.0 * main_in.Height / 1000.0, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter / 1000.0, 2) * Math.PI * 0.25,
+                                   _main_in.Width / 1000.0 * _main_in.Height / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (main_in.DuctType == DuctType.Round && local.DuctType == DuctType.Rectangular)
+            else if (_main_in.DuctType == DuctType.Round && _local.DuctType == DuctType.Rectangular)
             {
-                if (local.BranchType == BranchType.Rounded)
+                if (_local.BranchType == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, local.Width / 1000.0 * local.Height / 1000.0,
-                   Math.Pow(main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, local.Rounding / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
+                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, _local.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, local.Width / 1000.0 * local.Height / 1000.0,
-                   Math.Pow(main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
+                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
                 }
             }
             else
             {
-                if (local.BranchType == BranchType.Rounded)
+                if (_local.BranchType == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, Math.Pow(local.Diameter/ 1000.0, 2) * Math.PI * 0.25,
-                   Math.Pow(main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, local.Rounding / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter/ 1000.0, 2) * Math.PI * 0.25,
+                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, _local.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, local.AirFlow, main_in.AirFlow, Math.Pow(local.Diameter / 1000.0, 2) * Math.PI * 0.25,
-                   Math.Pow(main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.Junction(HVACAcoustic.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter / 1000.0, 2) * Math.PI * 0.25,
+                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
                 }
             }
             return lw;
@@ -3576,12 +3942,13 @@ namespace HVACElements
             }
             set
             {
-                if (_damper_type == DamperType.SingleBlade || _blade_number < 1)
+                if (_damper_type == DamperType.SingleBlade || value <= 1)
                 {
                     _blade_number = 1;
                     _damper_type = DamperType.SingleBlade;
+                    this.BladeAngle = _blade_angle;
                 }
-                else if (_blade_number < (byte)Math.Ceiling(_width / 20.0))
+                else if (value < (byte)Math.Ceiling(_width / 20.0))
                 {
                     _blade_number = value;
                 }
@@ -3604,13 +3971,13 @@ namespace HVACElements
                 if (_damper_type == DamperType.SingleBlade) { temp = 70; }
                 else { temp = 80; }
 
-                if (_blade_angle < 0)
+                if (value < 0)
                 {
                     _blade_angle = 0;
                 }
-                else if (_blade_angle < temp)
+                else if (value < temp)
                 {
-                    _blade_angle = value;
+                    _blade_angle = temp;
                 }
                 else
                 {
@@ -3653,10 +4020,10 @@ namespace HVACElements
         private int _diameter;
         private int _width;
         private int _height;
-        private int eff_area;
-        private GrillType grill_type;
-        private GrillLocation grill_location;
-        private GrillOrifice local = null;
+        private int _eff_area;
+        private GrillType _grill_type;
+        private GrillLocation _grill_location;
+        private GrillOrifice _local = null;
 
         /// <summary>Kratka wentylacyjna nawiewna/wyciągowa.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -3680,13 +4047,13 @@ namespace HVACElements
             this.Name = name;
             this.AirFlow = airFlow;
             this.IsIncluded = include;
-            grill_type = grillType;
-            grill_location = grillLocation;
+            _grill_type = grillType;
+            _grill_location = grillLocation;
             _width = width;
             _height = height;
             _diameter = diameter;
-            eff_area = percEffectiveArea;
-            local = new GrillOrifice( orificeHeight, orificeDepth);
+            _eff_area = percEffectiveArea;
+            _local = new GrillOrifice( orificeHeight, orificeDepth);
         }
 
         /// <summary>Kratka wentylacyjna nawiewna/wyciągowa.</summary>
@@ -3697,13 +4064,13 @@ namespace HVACElements
             this.Name = "grill_1";
             this.AirFlow = 400;
             this.IsIncluded = true;
-            grill_type = GrillType.RectangularSupplyWire;
-            grill_location = GrillLocation.FlushWall;
+            _grill_type = GrillType.RectangularSupplyWire;
+            _grill_location = GrillLocation.FlushWall;
             _width = 250;
             _height = 150;
             _diameter = 200;
-            eff_area = 70;
-            local = new GrillOrifice(20, 20);
+            _eff_area = 70;
+            _local = new GrillOrifice(20, 20);
         }
 
         /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
@@ -3712,7 +4079,7 @@ namespace HVACElements
             double[] attn = new double[8];
             DuctType duct_type;
 
-            if ((Convert.ToInt16(grill_type) <= 3) || ((Convert.ToInt16(grill_type) >= 8) && (Convert.ToInt16(grill_type) <= 11)))
+            if ((Convert.ToInt16(_grill_type) <= 3) || ((Convert.ToInt16(_grill_type) >= 8) && (Convert.ToInt16(_grill_type) <= 11)))
             {
                 duct_type = DuctType.Round;
             }
@@ -3723,11 +4090,11 @@ namespace HVACElements
 
             if (duct_type==DuctType.Rectangular)
             {
-                attn = HVACAcoustic.Attenuation.Grill(grill_location, _width/1000.0 * _height/1000.0);
+                attn = HVACAcoustic.Attenuation.Grill(_grill_location, _width/1000.0 * _height/1000.0);
             }
             else
             {
-                attn = HVACAcoustic.Attenuation.Grill(grill_location, Math.PI * 0.25 * Math.Pow(_diameter/1000.0, 2));
+                attn = HVACAcoustic.Attenuation.Grill(_grill_location, Math.PI * 0.25 * Math.Pow(_diameter/1000.0, 2));
             }
             return attn;
         }
@@ -3738,7 +4105,7 @@ namespace HVACElements
             double[] lw = new double[8];
             DuctType duct_type;
 
-            if ((Convert.ToInt16(grill_type) <= 3) || ((Convert.ToInt16(grill_type) >= 8) && (Convert.ToInt16(grill_type) <= 11)))
+            if ((Convert.ToInt16(_grill_type) <= 3) || ((Convert.ToInt16(_grill_type) >= 8) && (Convert.ToInt16(_grill_type) <= 11)))
             {
                 duct_type = DuctType.Round;
             }
@@ -3749,13 +4116,13 @@ namespace HVACElements
 
             if (duct_type==DuctType.Rectangular)
             {
-                lw = HVACAcoustic.Noise.Grill(grill_type, base.AirFlow, _width / 1000.0 * _height / 1000.0, local.Depth / 10.0,
-                    _width / 1000.0, local.Height / 10.0, eff_area);
+                lw = HVACAcoustic.Noise.Grill(_grill_type, base.AirFlow, _width / 1000.0 * _height / 1000.0, _local.Depth / 10.0,
+                    _width / 1000.0, _local.Height / 10.0, _eff_area);
             }
             else
             {
-                lw = HVACAcoustic.Noise.Grill(grill_type, base.AirFlow, Math.PI * 0.25 * Math.Pow(_diameter/1000.0, 2), local.Depth / 10.0,
-                    _width / 1000.0, local.Height / 10.0, eff_area);
+                lw = HVACAcoustic.Noise.Grill(_grill_type, base.AirFlow, Math.PI * 0.25 * Math.Pow(_diameter/1000.0, 2), _local.Depth / 10.0,
+                    _width / 1000.0, _local.Height / 10.0, _eff_area);
             }
             return lw;
         }
@@ -3812,7 +4179,7 @@ namespace HVACElements
             {
                 DuctType duct_type;
 
-                if ((Convert.ToInt16(grill_type) <= 3) || ((Convert.ToInt16(grill_type) >= 8) && (Convert.ToInt16(grill_type) <= 11)))
+                if ((Convert.ToInt16(_grill_type) <= 3) || ((Convert.ToInt16(_grill_type) >= 8) && (Convert.ToInt16(_grill_type) <= 11)))
                 {
                     duct_type = DuctType.Round;
                 }
@@ -3859,21 +4226,21 @@ namespace HVACElements
         {
             get
             {
-                return eff_area;
+                return _eff_area;
             }
             set
             {
                 if (value < 10)
                 {
-                    eff_area = 10;
+                    _eff_area = 10;
                 }
                 else if (value < 100)
                 {
-                    eff_area = value;
+                    _eff_area = value;
                 }
                 else
                 {
-                    eff_area = 100;
+                    _eff_area = 100;
                 }
             }
         }
@@ -3882,11 +4249,11 @@ namespace HVACElements
         {
             get
             {
-                return grill_type;
+                return _grill_type;
             }
             set
             {
-                grill_type = value;
+                _grill_type = value;
             }
         }
 
@@ -3894,11 +4261,11 @@ namespace HVACElements
         {
             get
             {
-                return grill_location;
+                return _grill_location;
             }
             set
             {
-                grill_location = value;
+                _grill_location = value;
             }
         }
 
@@ -3906,7 +4273,7 @@ namespace HVACElements
         {
             get
             {
-                return local;
+                return _local;
             }
         }
     }
@@ -4136,13 +4503,39 @@ namespace HVACElements
     [Serializable()]
     public class DoubleJunction : ElementsBase
     {
-        private DoubleJunctionBranch local_right = null;
-        private DoubleJunctionBranch local_left = null;
-        private DoubleJunctionContaier container = null;
-        private DoubleJunctionMain main_in = null;
-        private DoubleJunctionMain main_out = null;
+        private readonly DoubleJunctionBranch _local_right = null;
+        private readonly DoubleJunctionBranch _local_left = null;
+        private DoubleJunctionContaier _container = null;
+        private readonly DoubleJunctionMain _main_in = null;
+        private readonly DoubleJunctionMain _main_out = null;
 
-        public DoubleJunction(string name, string comments, DuctType ductTypeMain, int airFlowMainIn, int widthMainIn, int widthMainOut, int heightMainIn, int heightMainOut,
+        /// <summary>Czwórnik.</summary>
+        /// <param name="name">Nazwa elementu.</param>
+        /// <param name="comments">Informacje dodatkowe.</param>
+        /// <param name="ductTypeMainIn">Typ głównego króćca podłączeniowego od strony wlotowej.</param>
+        /// <param name="ductTypeBranch">Typ króćca odgałęźnego.</param>
+        /// <param name="airFlowMainIn">Przepływ powietrza na wlocie do elementu [m3/h].</param>
+        /// <param name="airFlowBranchRight">Przepływ powietrza przez odgałęzienie prawe [m3/h].</param>
+        /// <param name="airFlowBranchLeft">Przepływ powietrza przez odgałęzienie lewe [m3/h].</param>
+        /// <param name="branchTypeRight">Typ odgałęzienia prawego.</param>
+        /// <param name="branchTypeLeft">Typ odgałęzienia lewego.</param>
+        /// <param name="widthMainIn">Szerokość głównego króćca podłączeniowego od strony wlotowej [mm].</param>
+        /// <param name="heightMainIn">Wysokość głównego króćca podłączeniowego od strony wlotowej [mm].</param>
+        /// <param name="diameterMainIn">Średnica głównego króćca podłączeniowego od strony wlotowej [mm].</param>
+        /// <param name="widthMainOut">Szerokość głównego króćca podłączeniowego od strony wylotowej [mm].</param>
+        /// <param name="heightMainOut">Wysokość głównego króćca podłączeniowego od strony wylotowej [mm].</param>
+        /// <param name="diameterMainOut">Średnica głównego króćca podłączeniowego od strony wylotowej [mm].</param>
+        /// <param name="widthBranchRight">Szerokość króćca odgałęźnego prawego [mm].</param>
+        /// <param name="heightBranchRight">Wysokość króćca odgałęźnego prawego [mm].</param>
+        /// <param name="diameterBranchRight">Średnica króćca odgałęźnego prawego [mm].</param>
+        /// <param name="roundingRight">Promień zaokrąglenia odgałęzienia prawego [mm].</param>
+        /// <param name="widthBranchLeft">Szerokość króćca odgałęźnego lewego [mm].</param>
+        /// <param name="heightBranchLeft">Wysokość króćca odgałęźnego lewego [mm].</param>
+        /// <param name="diameterBranchLeft">Średnica króćca odgałęźnego lewego [mm].</param>
+        /// <param name="roundingLeft">Promień zaokrąglenia odgałęzienia lewego [mm].</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
+        /// <returns></returns>
+        public DoubleJunction(string name, string comments, DuctType ductTypeMainIn, int airFlowMainIn, int widthMainIn, int widthMainOut, int heightMainIn, int heightMainOut,
             int diameterMainIn, int diameterMainOut, DuctType ductTypeBranch, BranchType branchTypeRight, int airFlowBranchRight,
             int widthBranchRight, int heightBranchRight, int diameterBranchRight, int roundingRight, BranchType branchTypeLeft,
             int airFlowBranchLeft, int widthBranchLeft, int heightBranchLeft, int diameterBranchLeft, int roundingLeft, bool include)
@@ -4167,16 +4560,17 @@ namespace HVACElements
                 }
             }
 
-            container = new DoubleJunctionContaier(ductTypeMain, airFlowMainIn, widthMainIn, widthMainOut, heightMainIn, heightMainOut,
+            _container = new DoubleJunctionContaier(ductTypeMainIn, airFlowMainIn, widthMainIn, widthMainOut, heightMainIn, heightMainOut,
                 diameterMainIn, diameterMainOut, ductTypeBranch, branchTypeRight, airFlowBranchRight, widthBranchRight, heightBranchRight,
                 diameterBranchRight, roundingRight, branchTypeLeft, airFlowBranchLeft, widthBranchLeft, heightBranchLeft, diameterBranchLeft,
                 roundingLeft);
-            local_right = new DoubleJunctionBranch(container, Branch.BranchRight);
-            local_left = new DoubleJunctionBranch(container, Branch.BranchLeft);
-            main_in = new DoubleJunctionMain(this, JunctionConnectionSide.Inlet);
-            main_out = new DoubleJunctionMain(this, JunctionConnectionSide.Outlet);
+            _local_right = new DoubleJunctionBranch(_container, Branch.BranchRight);
+            _local_left = new DoubleJunctionBranch(_container, Branch.BranchLeft);
+            _main_in = new DoubleJunctionMain(this, JunctionConnectionSide.Inlet);
+            _main_out = new DoubleJunctionMain(this, JunctionConnectionSide.Outlet);
         }
 
+        /// <summary>Czwórnik.</summary>
         public DoubleJunction()
         {
             _type = "doublejunction";
@@ -4185,23 +4579,19 @@ namespace HVACElements
             base.AirFlow = 2600;
             this.IsIncluded = true;
 
-            container = new DoubleJunctionContaier(DuctType.Rectangular, base.AirFlow, 400, 200, 400, 200, 450, 250,
+            _container = new DoubleJunctionContaier(DuctType.Rectangular, base.AirFlow, 400, 200, 400, 200, 450, 250,
                 DuctType.Rectangular, BranchType.Straight, 600, 160, 160, 200, 0, BranchType.Straight, 400, 160, 160, 200, 0);
-            local_right = new DoubleJunctionBranch(container, Branch.BranchRight);
-            local_left = new DoubleJunctionBranch(container, Branch.BranchLeft); main_in = new DoubleJunctionMain(this, JunctionConnectionSide.Inlet);
-            main_in = new DoubleJunctionMain(this, JunctionConnectionSide.Inlet);
-            main_out = new DoubleJunctionMain(this, JunctionConnectionSide.Outlet);
+            _local_right = new DoubleJunctionBranch(_container, Branch.BranchRight);
+            _local_left = new DoubleJunctionBranch(_container, Branch.BranchLeft); _main_in = new DoubleJunctionMain(this, JunctionConnectionSide.Inlet);
+            _main_in = new DoubleJunctionMain(this, JunctionConnectionSide.Inlet);
+            _main_out = new DoubleJunctionMain(this, JunctionConnectionSide.Outlet);
         }
 
         public DoubleJunctionBranch BranchRight
         {
             get
             {
-                return local_right;
-            }
-            set
-            {
-                local_right = value;
+                return _local_right;
             }
         }
 
@@ -4209,11 +4599,7 @@ namespace HVACElements
         {
             get
             {
-                return local_left;
-            }
-            set
-            {
-                local_left = value;
+                return _local_left;
             }
         }
 
@@ -4221,11 +4607,7 @@ namespace HVACElements
         {
             get
             {
-                return main_in;
-            }
-            set
-            {
-                main_in = value;
+                return _main_in;
             }
         }
 
@@ -4233,11 +4615,7 @@ namespace HVACElements
         {
             get
             {
-                return main_out;
-            }
-            set
-            {
-                main_out = value;
+                return _main_out;
             }
         }
 
@@ -4245,11 +4623,7 @@ namespace HVACElements
         {
             get
             {
-                return container;
-            }
-            set
-            {
-                container = value;
+                return _container;
             }
         }
 
@@ -4262,119 +4636,121 @@ namespace HVACElements
             set
             {
                 base.AirFlow = value;
-                container.In.AirFlow = value;
+                _container.In.AirFlow = value;
 
-                if ((container.AirFlowBranchRight + container.AirFlowBranchLeft) >= value)
+                if ((_container.AirFlowBranchRight + _container.AirFlowBranchLeft) >= value)
                 {
-                    double temp = container.AirFlowBranchRight / (container.AirFlowBranchRight + container.AirFlowBranchLeft);
-                    container.AirFlowBranchRight = (int)(temp * value);
-                    container.AirFlowBranchLeft = (int)((1 - temp) * value);
+                    double temp = _container.AirFlowBranchRight / (_container.AirFlowBranchRight + _container.AirFlowBranchLeft);
+                    _container.AirFlowBranchRight = (int)(temp * value);
+                    _container.AirFlowBranchLeft = (int)((1 - temp) * value);
                 }
 
-                container.Out.AirFlow = value - container.AirFlowBranchRight - container.AirFlowBranchLeft;
+                _container.Out.AirFlow = value - _container.AirFlowBranchRight - _container.AirFlowBranchLeft;
             }
         }
 
+        /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
             double[] attn = new double[8];
 
-            if (container.In.DuctType == DuctType.Rectangular && container.DuctType == DuctType.Rectangular)
+            if (_container.In.DuctType == DuctType.Rectangular && _container.DuctType == DuctType.Rectangular)
             {
-                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRectangularBranchRectangular(Branch.Main, container.BranchTypeRight,
-                    container.In.Width, container.In.Height, container.Out.Width, container.Out.Height, container.WidthBranchRight, container.HeightBranchRight,
-                    container.WidthBranchLeft, container.HeightBranchLeft);
+                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRectangularBranchRectangular(Branch.Main, _container.BranchTypeRight,
+                    _container.In.Width, _container.In.Height, _container.Out.Width, _container.Out.Height, _container.WidthBranchRight, _container.HeightBranchRight,
+                    _container.WidthBranchLeft, _container.HeightBranchLeft);
             }
-            else if (container.In.DuctType == DuctType.Rectangular && container.DuctType == DuctType.Round)
+            else if (_container.In.DuctType == DuctType.Rectangular && _container.DuctType == DuctType.Round)
             {
-                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRectangularBranchRound(Branch.Main, container.BranchTypeRight,
-                    container.In.Width, container.In.Height, container.Out.Width, container.Out.Height,
-                    container.DiameterBranchRight, container.DiameterBranchLeft);
+                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRectangularBranchRound(Branch.Main, _container.BranchTypeRight,
+                    _container.In.Width, _container.In.Height, _container.Out.Width, _container.Out.Height,
+                    _container.DiameterBranchRight, _container.DiameterBranchLeft);
             }
-            else if (container.In.DuctType == DuctType.Round && container.DuctType == DuctType.Rectangular)
+            else if (_container.In.DuctType == DuctType.Round && _container.DuctType == DuctType.Rectangular)
             {
-                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRoundBranchRectangular(Branch.Main, container.BranchTypeRight,
-                    container.In.Diameter, container.Out.Diameter, container.WidthBranchRight, container.HeightBranchRight,
-                    container.WidthBranchLeft, container.HeightBranchLeft);
+                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRoundBranchRectangular(Branch.Main, _container.BranchTypeRight,
+                    _container.In.Diameter, _container.Out.Diameter, _container.WidthBranchRight, _container.HeightBranchRight,
+                    _container.WidthBranchLeft, _container.HeightBranchLeft);
             }
             else
             {
-                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRoundBranchRound(Branch.Main, container.BranchTypeRight,
-                    container.In.Diameter, container.Out.Diameter, container.DiameterBranchRight, container.DiameterBranchLeft);
+                attn = HVACAcoustic.Attenuation.DoubleJunctionMainRoundBranchRound(Branch.Main, _container.BranchTypeRight,
+                    _container.In.Diameter, _container.Out.Diameter, _container.DiameterBranchRight, _container.DiameterBranchLeft);
             }
             return attn;
         }
 
+        /// <summary>Oblicz szum generowany przez element.</summary>
         public override double[] Noise()
         {
             double[] lw = new double[8];
 
-            if (container.In.DuctType == DuctType.Rectangular && container.DuctType == DuctType.Rectangular)
+            if (_container.In.DuctType == DuctType.Rectangular && _container.DuctType == DuctType.Rectangular)
             {
-                if (container.BranchTypeRight == BranchType.Rounded)
+                if (_container.BranchTypeRight == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, container.WidthBranchRight / 1000.0 * container.HeightBranchRight / 1000.0,
-                        container.WidthBranchLeft / 1000.0 * container.HeightBranchLeft / 1000.0, container.In.Width / 1000.0 * container.In.Height / 1000.0,
-                        container.RoundingBranchRight / 1000.0, container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0,
+                        _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0, _container.In.Width / 1000.0 * _container.In.Height / 1000.0,
+                        _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, container.WidthBranchRight / 1000.0 * container.HeightBranchRight / 1000.0,
-                        container.WidthBranchLeft / 1000.0 * container.HeightBranchLeft / 1000.0, container.In.Width / 1000.0 * container.In.Height / 1000.0,
-                        container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0,
+                        _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0, _container.In.Width / 1000.0 * _container.In.Height / 1000.0,
+                        _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (container.In.DuctType == DuctType.Round && container.DuctType == DuctType.Rectangular)
+            else if (_container.In.DuctType == DuctType.Round && _container.DuctType == DuctType.Rectangular)
             {
-                if (container.BranchTypeRight == BranchType.Rounded)
+                if (_container.BranchTypeRight == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, container.WidthBranchRight / 1000.0 * container.HeightBranchRight / 1000.0,
-                        container.WidthBranchLeft / 1000.0 * container.HeightBranchLeft / 1000.0, Math.PI * 0.25 * Math.Pow(container.In.Diameter / 1000.0, 2),
-                        container.RoundingBranchRight / 1000.0, container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0,
+                        _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0, Math.PI * 0.25 * Math.Pow(_container.In.Diameter / 1000.0, 2),
+                        _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, container.WidthBranchRight / 1000.0 * container.HeightBranchRight / 1000.0,
-                        container.WidthBranchLeft / 1000.0 * container.HeightBranchLeft / 1000.0, Math.PI * 0.25 * Math.Pow(container.In.Diameter / 1000.0, 2),
-                        container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0,
+                        _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0, Math.PI * 0.25 * Math.Pow(_container.In.Diameter / 1000.0, 2),
+                        _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (container.In.DuctType == DuctType.Round && container.DuctType == DuctType.Round)
+            else if (_container.In.DuctType == DuctType.Round && _container.DuctType == DuctType.Round)
             {
-                if (container.BranchTypeRight == BranchType.Rounded)
+                if (_container.BranchTypeRight == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, Math.PI * 0.25 * Math.Pow(container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(container.DiameterBranchLeft / 1000.0, 2), Math.PI * 0.25 * Math.Pow(container.In.Diameter / 1000.0, 2),
-                        container.RoundingBranchRight / 1000.0, container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), Math.PI * 0.25 * Math.Pow(_container.In.Diameter / 1000.0, 2),
+                        _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, Math.PI * 0.25 * Math.Pow(container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(container.DiameterBranchLeft / 1000.0, 2), Math.PI * 0.25 * Math.Pow(container.In.Diameter / 1000.0, 2),
-                        container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), Math.PI * 0.25 * Math.Pow(_container.In.Diameter / 1000.0, 2),
+                        _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
                 }
             }
             else
             {
-                if (container.BranchTypeRight == BranchType.Rounded)
+                if (_container.BranchTypeRight == BranchType.Rounded)
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, Math.PI * 0.25 * Math.Pow(container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(container.DiameterBranchLeft / 1000.0, 2), container.In.Width / 1000.0 * container.In.Height / 1000.0,
-                        container.RoundingBranchRight / 1000.0, container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), _container.In.Width / 1000.0 * _container.In.Height / 1000.0,
+                        _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, container.AirFlowBranchRight, container.AirFlowBranchLeft,
-                        container.In.AirFlow, Math.PI * 0.25 * Math.Pow(container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(container.DiameterBranchLeft / 1000.0, 2), container.In.Width / 1000.0 * container.In.Height / 1000.0,
-                        container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = HVACAcoustic.Noise.DoubleJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
+                        _container.In.AirFlow, Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), _container.In.Width / 1000.0 * _container.In.Height / 1000.0,
+                        _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
                 }
             }
             return lw;
@@ -4384,11 +4760,11 @@ namespace HVACElements
     [Serializable()]
     public class Silencer : ElementsBase, IDimensions
     {
-        private SilencerAttenuation local = null;
+        private SoundAttenuation _local;
         private int _width;
         private int _height;
         private int _diameter;
-        private int eff_area;
+        private int _eff_area;
         private DuctType _duct_type;
         private SilencerType _silencer_type;
         private double _lenght;
@@ -4415,8 +4791,8 @@ namespace HVACElements
         /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
         /// <returns></returns>
         public Silencer(string name, string comments, SilencerType silencerType, DuctType ductType, int airFlow, int width, int height,
-             int diameter, double lenght, double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
-             double octaveBand1000Hz, double octaveBand2000Hz, double octaveBand4000Hz, double octaveBand8000Hz, int percEffectiveArea,
+             int diameter, double lenght, int octaveBand63Hz, int octaveBand125Hz, int octaveBand250Hz, int octaveBand500Hz,
+             int octaveBand1000Hz, int octaveBand2000Hz, int octaveBand4000Hz, int octaveBand8000Hz, int percEffectiveArea,
              bool include)
         {
             _type = "silencer";
@@ -4430,8 +4806,8 @@ namespace HVACElements
             _height = height;
             _diameter = diameter;
             _lenght = lenght;
-            eff_area = percEffectiveArea;
-            local = new SilencerAttenuation(octaveBand63Hz, octaveBand125Hz, octaveBand250Hz, octaveBand500Hz,
+            _eff_area = percEffectiveArea;
+            _local = new SoundAttenuation(octaveBand63Hz, octaveBand125Hz, octaveBand250Hz, octaveBand500Hz,
              octaveBand1000Hz, octaveBand2000Hz, octaveBand4000Hz, octaveBand8000Hz);
         }
 
@@ -4449,8 +4825,8 @@ namespace HVACElements
             _height = 200;
             _diameter = 250;
             _lenght = 0.6;
-            eff_area = 100;
-            local = new SilencerAttenuation(1, 2, 5, 9, 16, 13, 5, 6);
+            _eff_area = 100;
+            _local = new SoundAttenuation(1, 2, 5, 9, 16, 13, 5, 6);
         }
 
         public int Width
@@ -4505,11 +4881,11 @@ namespace HVACElements
             {
                 if (_duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0) * eff_area/100.0);
+                    return (this.AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0) * _eff_area/100.0);
                 }
                 else
                 {
-                    return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2) * eff_area / 100.0);
+                    return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2) * _eff_area / 100.0);
                 }
             }
         }
@@ -4564,21 +4940,21 @@ namespace HVACElements
         {
             get
             {
-                return eff_area;
+                return _eff_area;
             }
             set
             {
                 if (value < 10)
                 {
-                    eff_area = 10;
+                    _eff_area = 10;
                 }
                 else if (value < 100)
                 {
-                    eff_area = value;
+                    _eff_area = value;
                 }
                 else
                 {
-                    eff_area = 100;
+                    _eff_area = 100;
                 }
             }
         }
@@ -4607,19 +4983,19 @@ namespace HVACElements
             }
         }
 
-        public SilencerAttenuation OctaveBandAttenuation
+        public SoundAttenuation OctaveBandAttenuation
         {
             get
             {
-                return local;
+                return _local;
             }
         }
 
         /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
-            double[] attn = { local.OctaveBand63Hz, local.OctaveBand125Hz, local.OctaveBand250Hz, local.OctaveBand500Hz, local.OctaveBand1000Hz,
-                local.OctaveBand2000Hz, local.OctaveBand4000Hz, local.OctaveBand8000Hz };
+            double[] attn = { _local.OctaveBand63Hz, _local.OctaveBand125Hz, _local.OctaveBand250Hz, _local.OctaveBand500Hz, _local.OctaveBand1000Hz,
+                _local.OctaveBand2000Hz, _local.OctaveBand4000Hz, _local.OctaveBand8000Hz };
             return attn;
         }
 
@@ -4630,13 +5006,13 @@ namespace HVACElements
 
             if (_duct_type == DuctType.Rectangular)
             {
-                lw = HVACAcoustic.Noise.Silencer(base.AirFlow, _height / 1000.0 * _width / 1000.0, eff_area);
+                lw = HVACAcoustic.Noise.Silencer(base.AirFlow, _height / 1000.0 * _width / 1000.0, _eff_area);
             }
             else
             {
                 if (_silencer_type == SilencerType.ParallelBaffles)
                 {
-                    lw = HVACAcoustic.Noise.Silencer(base.AirFlow, 0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2), eff_area);
+                    lw = HVACAcoustic.Noise.Silencer(base.AirFlow, 0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2), _eff_area);
                 }
                 else
                 {
@@ -4648,8 +5024,330 @@ namespace HVACElements
     }
 
     [Serializable()]
-    public class ElementTreeCollection : List<ElementsBase>
+    public class Room : ElementsBase
     {
+        private SoundAbsorption _local;
+        private double _width;
+        private double _height;
+        private double _lenght;
+        private NoiseLocation _noiseLocation;
+        private double _distance;
+        private int _temperature;
+        private byte _rh;
+        private byte _directionFactor;
+        private readonly double[] _attn;
+
+        /// <summary>Pomieszczenie.</summary>
+        /// <param name="name">Nazwa elementu.</param>
+        /// <param name="comments">Informacje dodatkowe.</param>
+        /// <param name="temperature">Temperatura powietrza w pomieszczeniu [deg C].</param>
+        /// <param name="relativeHumidity">Wilgotność względna powietrza w pomieszczeniu [%].</param>
+        /// <param name="noiseLocation">Lokalizacja źródła hałasu</param>
+        /// <param name="distance">Odległość między źródłem dźwięku a słuchaczem [m]</param>
+        /// <param name="airFlow">Ilość powietrza nawiewana o pomieszczenia [m3/h].</param>
+        /// <param name="width">Szerokość pomieszczenia [m].</param>
+        /// <param name="height">Wysokość pomieszczenia [m].</param>
+        /// <param name="lenght">Długość pomieszczenia [m].</param>
+        /// <param name="octaveBand63Hz">Chłonność akustyczna pomieszczenia w paśmie 63Hz [dB].</param>
+        /// <param name="octaveBand125Hz">Chłonność akustyczna pomieszczenia w paśmie 125Hz [dB].</param>
+        /// <param name="octaveBand250Hz">Chłonność akustyczna pomieszczenia w paśmie 250Hz [dB].</param>
+        /// <param name="octaveBand500Hz">Chłonność akustyczna pomieszczenia w paśmie 500Hz [dB].</param>
+        /// <param name="octaveBand1000Hz">Chłonność akustyczna pomieszczenia w paśmie 1000Hz [dB].</param>
+        /// <param name="octaveBand2000Hz">Chłonność akustyczna pomieszczenia w paśmie 2000Hz [dB].</param>
+        /// <param name="octaveBand4000Hz">Chłonność akustyczna pomieszczenia w paśmie 4000Hz [dB].</param>
+        /// <param name="octaveBand8000Hz">Chłonność akustyczna pomieszczenia w paśmie 8000Hz [dB].</param>
+        /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
+        /// <returns></returns>
+        public Room(string name, string comments, int temperature, byte relativeHumidity, double distance, NoiseLocation noiseLocation, double width,
+            double height, double lenght, double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
+            double octaveBand1000Hz, double octaveBand2000Hz, double octaveBand4000Hz, double octaveBand8000Hz, bool include)
+        {
+            _type = "room";
+            this.Comments = comments;
+            this.Name = name;
+            base.IsIncluded = include;
+            _temperature = temperature;
+            _rh = relativeHumidity;
+            _distance = distance;
+            _noiseLocation = noiseLocation;
+            _width = width;
+            _height = height;
+            _lenght = lenght;
+            _local.OctaveBand63Hz = octaveBand63Hz;
+            _local.OctaveBand125Hz = octaveBand125Hz;
+            _local.OctaveBand250Hz = octaveBand250Hz;
+            _local.OctaveBand500Hz = octaveBand500Hz;
+            _local.OctaveBand1000Hz = octaveBand1000Hz;
+            _local.OctaveBand2000Hz = octaveBand2000Hz;
+            _local.OctaveBand4000Hz = octaveBand4000Hz;
+            _local.OctaveBand8000Hz = octaveBand8000Hz;
+        }
+
+        /// <summary>Pomieszczenie.</summary>
+        public Room()
+        {
+            _type = "room";
+            this.Comments = "";
+            this.Name = "room_1";
+            base.IsIncluded = true;
+            _temperature = 20;
+            _rh = 40;
+            _distance = 3;
+            _noiseLocation = NoiseLocation.CeilingCenter;
+            _width = 10;
+            _height = 3;
+            _lenght = 12;
+            _local.OctaveBand63Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[0];
+            _local.OctaveBand125Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[1];
+            _local.OctaveBand250Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[2];
+            _local.OctaveBand500Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[3];
+            _local.OctaveBand1000Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[4];
+            _local.OctaveBand2000Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[5];
+            _local.OctaveBand4000Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[6];
+            _local.OctaveBand8000Hz = Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[7];
+        }
+
+        public new bool IsIncluded
+        {
+            get
+            {
+                return base.IsIncluded;
+            }
+            set
+            {
+                base.IsIncluded = value;
+            }
+        }
+         
+        public int Temperature
+        {
+            get
+            {
+                return _temperature;
+            }
+            set
+            {
+                if (value < -20)
+                {
+                    _temperature = -20;
+                }
+                else if (value < 50)
+                {
+                    _temperature = value;
+                }
+                else
+                {
+                    _temperature = 50;
+                }
+            }
+        }
+
+        public byte RelativeHumidity
+        {
+            get
+            {
+                return _rh;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    _rh = 0;
+                }
+                else if (value < 100)
+                {
+                    _rh = value;
+                }
+                else
+                {
+                    _rh = 100;
+                }
+            }
+        }
+
+        public new int AirFlow
+        {
+            get
+            {
+                return base.AirFlow;
+            }
+            internal set
+            {
+                base.AirFlow = value;
+            }
+        }
+
+        public double Width
+        {
+            get
+            {
+                return _width;
+            }
+            set
+            {
+                if (value < 1)
+                {
+                    _width = 1;
+                }
+                else if (value < 100)
+                {
+                    _width = Math.Round(value, 2);
+                }
+                else
+                {
+                    _width = 100;
+                }
+            }
+        }
+
+        public double Height
+        {
+            get
+            {
+                return _height;
+            }
+            set
+            {
+                if (value < 1)
+                {
+                    _height = 1;
+                }
+                else if (value < 100)
+                {
+                    _height = Math.Round(value, 2);
+                }
+                else
+                {
+                    _height = 100;
+                }
+            }
+        }            
+
+        public double Lenght
+        {
+            get
+            {
+                return _lenght;
+            }
+            set
+            {
+                if (value < 1)
+                {
+                    _lenght = 1;
+                }
+                else if (value < 100)
+                {
+                    _lenght = Math.Round(value, 2);
+                }
+                else
+                {
+                    _lenght = 100;
+                }
+            }
+        }
+
+        public double Distance
+        {
+            get
+            {
+                return _distance;
+            }
+            set
+            {
+                double[] temp = new double[] { _width, _height, _lenght };
+
+                if (value < 0.1) { _distance = 0.1; }
+                else if (value < temp.Min()) { _distance = value; }
+                else { _distance = Math.Round(temp.Min(), 2); }
+            }
+        }
+
+        public NoiseLocation NoiseLocation
+        {
+            get
+            {
+                return _noiseLocation;
+            }
+            set
+            {
+                _noiseLocation = value;
+
+                switch (_noiseLocation)
+                {
+                    case NoiseLocation.RoomCenter:
+                        _directionFactor = 1;
+                        break;
+                    case NoiseLocation.WallCenter:
+                        _directionFactor = 2;
+                        break;
+                    case NoiseLocation.WallCorner:
+                        _directionFactor = 8;
+                        break;
+                    case NoiseLocation.WallEdge:
+                        _directionFactor = 4;
+                        break;
+                    case NoiseLocation.CeilingCenter:
+                        _directionFactor = 2;
+                        break;
+                    case NoiseLocation.CeilingCorner:
+                        _directionFactor = 8;
+                        break;
+                    case NoiseLocation.CeilingEdge:
+                        _directionFactor = 4;
+                        break;
+                    case NoiseLocation.FloorCenter:
+                        _directionFactor = 2;
+                        break;
+                    case NoiseLocation.FloorCorner:
+                        _directionFactor = 8;
+                        break;
+                    case NoiseLocation.FloorEdge:
+                        _directionFactor = 4;
+                        break;
+                }
+            }
+        }
+
+        public SoundAbsorption OctaveBandAttenuation
+        {
+            get
+            {
+                return _local;
+            }
+        }
+
+        /// <summary>Oblicz tłumienność pomieszczenia.</summary>
+        public override double[] Attenuation()
+        {
+            double[] attn = new double[8];
+
+            if (this.IsIncluded == true)
+            {
+                attn = Transmission.PointCorrection(_temperature, _rh, _directionFactor, _distance, _attn, _width, _lenght, _height);
+            }
+            else
+            {
+                for (int i = 0; i < attn.Length; i++)
+                {
+                    attn[i] = -1000;
+                }
+            }
+
+            return attn;
+        }
+
+        /// <summary>Oblicz szum generowany przez pomieszczenie.</summary>
+        public override double[] Noise()
+        {
+            double[] lw = { -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000 };
+            return lw;
+        }
+    }
+
+    [Serializable()]
+    public class ElementTreeCollection<T> where T: ElementsBase
+    {
+        private T element;
 
     }
 }
