@@ -123,6 +123,17 @@ namespace HVACAcoustic
             return val;
         }
 
+        public static double[] OctaveSubstract(double[] db1, double[] db2)
+        {
+            double[] val = new double[8];
+
+            for (int i = 0; i < val.Length; i++)
+            {
+                val[i] = db1[i] - db2[i];
+            }
+            return val;
+        }
+
         public static double[] OctaveDecibelAdd(double[] db1, double[] db2)
         {
             double[] val = new double[8];
@@ -130,6 +141,17 @@ namespace HVACAcoustic
             for (int i=0; i < val.Length; i++)
             {
                 val[i] = 10 * Math.Log10(Math.Pow(10, (db1[i] / 10)) + Math.Pow(10, (db2[i] / 10)));
+            }
+            return val;
+        }
+
+        public static double OctaveSum(params double[] oct)
+        {
+            double val = -1000;
+
+            for (int i = 0; i < oct.Length; i++)
+            {
+                val = 10 * Math.Log10(Math.Pow(10, (val / 10)) + Math.Pow(10, (oct[i] / 10)));
             }
             return val;
         }
@@ -155,7 +177,7 @@ namespace HVACAcoustic
             return x * 3.2808399;
         }
 
-        public static double kgTolb(double x)
+        public static double KgTolb(double x)
         //kg na lb (funty)
         {
             return x / 0.45359237;
@@ -2923,7 +2945,7 @@ namespace HVACAcoustic
             double a, ao, fl, tlmin, q1, tl1, tl2;
             double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
-            q1 = Unit.kgTolb(q) / (Unit.MToFt(1) * Unit.MToFt(1));
+            q1 = Unit.KgTolb(q) / (Unit.MToFt(1) * Unit.MToFt(1));
             a = (100 * h / 2.54) * (100 * w / 2.54);
             ao = 24 * Unit.MToFt(l) * ((100 * h / 2.54) + (100 * w / 2.54));
             fl = 24134 / Math.Pow(((100 * h / 2.54) * (100 * w / 2.54)), 0.5);
@@ -2983,7 +3005,7 @@ namespace HVACAcoustic
             double a, ao, tlout, q1, tl1, tl2;
             double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
-            q1 = Unit.kgTolb(q) / (Unit.MToFt(1) * Unit.MToFt(1));
+            q1 = Unit.KgTolb(q) / (Unit.MToFt(1) * Unit.MToFt(1));
             a = Math.PI * Math.Pow((100 * d / 2.54), 2) * 0.25;
             ao = 12 * Math.PI * (100 * d / 2.54) * Unit.MToFt(l);
 
@@ -3159,17 +3181,24 @@ namespace HVACAcoustic
             //h-wysokość pomieszczenia, m
             //r-odległość od źródła dźwięku, m
             //rm-chłonność akustyczna pomieszczenia, m2 Sabin
-            double m, mfp, s, r1;
+            double m, mfp, s, r1, rv;
             double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] kw = new double[8];
+
             r1 = Unit.MToFt(r);
             s = 2 * (Unit.MToFt(w) * Unit.MToFt(l)) + 2 * (Unit.MToFt(l) * Unit.MToFt(h)) + 2 * (Unit.MToFt(w) * Unit.MToFt(h));
             mfp = 4 * (Unit.MToFt(w) * Unit.MToFt(l) * Unit.MToFt(h)) / s;
 
             for (int i = 0; i < oct.Length; i++)
             {
-                m = m_coeff(t, rh)[i] / Unit.MToFt(1);
-                kw[i] = -(10 * Math.Log10((q * Math.Exp(-m * r1)) / (4 * Math.PI * Math.Pow(r1, 2)) + (mfp / r1) * (4 / rm[i])) + 10.5);
+                m = M_coeff(t, rh)[i] / Unit.MToFt(1);
+                rv = (s * (rm[i] + m * mfp)) / (1 - (rm[i] + m * mfp));
+                kw[i] = -(10 * Math.Log10((q * Math.Exp(-m * r1)) / (4 * Math.PI * Math.Pow(r1, 2)) + (mfp / r1) * (4 / rv)) + 10.5);
+
+                if (kw[i] < 0)
+                {
+                    kw[i] = 0.0;
+                }
             }
             return kw;
         }
@@ -3189,7 +3218,7 @@ namespace HVACAcoustic
             return tl;
         }
 
-        private static double[] m_coeff(double t, double fi)
+        internal static double[] M_coeff(double t, double fi)
         {
             //t-temperatura powietrza (od -20 do 50), st.C
             //fi-wilgotność względna powietrza, %
