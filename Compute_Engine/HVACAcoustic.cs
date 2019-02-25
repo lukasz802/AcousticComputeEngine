@@ -1301,7 +1301,15 @@ namespace HVACAcoustic
             {
                 lw[i] = kw[i] - 145 + 55 * Math.Log10(v) + 10 * Math.Log10(a * Math.Pow(Unit.MToFt(1), 2)) - 45 * Math.Log10(p / 100);
             }
-            return lw;
+
+            if (MathOperations.OctaveSum(lw) > MathOperations.OctaveSum(Duct(q, a)))
+            {
+                return lw;
+            }
+            else
+            {
+                return Duct(q, a);
+            }
         }
 
         public static double[] Grill(GrillType grillType, double q, double a, double lOrifice, double wGrill, double hOrifice, double p)

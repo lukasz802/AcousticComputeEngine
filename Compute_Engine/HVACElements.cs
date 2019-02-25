@@ -532,7 +532,7 @@ namespace HVACElements
         private readonly DuctConnection _in = null;
         private readonly DuctConnection _out = null;
 
-        public DoubleJunctionContaier(DuctType ductTypeMain, int airFlowMain, int widthMainIn, int widthMainOut, int heightMainIn, int heightMainOut,
+        internal DoubleJunctionContaier(DuctType ductTypeMain, int airFlowMain, int widthMainIn, int widthMainOut, int heightMainIn, int heightMainOut,
             int diameterMainIn, int diameterMainOut, DuctType ductTypeBranch, BranchType branchTypeRight, int airFlowBranchRight,
             int widthBranchRight, int heightBranchRight, int diameterBranchRight, int roundingRight, BranchType branchTypeLeft,
             int airFlowBranchLeft, int widthBranchLeft, int heightBranchLeft, int diameterBranchLeft, int roundingLeft)
@@ -554,7 +554,7 @@ namespace HVACElements
             _out = new DuctConnection(ductTypeMain, airFlowMain - airFlowBranchRight - airFlowBranchLeft, widthMainOut, heightMainOut, diameterMainOut);
         }
 
-        public int AirFlowBranchRight
+        internal int AirFlowBranchRight
         {
             get
             {
@@ -566,7 +566,7 @@ namespace HVACElements
             }
         }
 
-        public int WidthBranchRight
+        internal int WidthBranchRight
         {
             get
             {
@@ -574,9 +574,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    width_branch_right = 80;
+                    width_branch_right = 100;
                 }
                 else if (value < 2000)
                 {
@@ -589,7 +589,7 @@ namespace HVACElements
             }
         }
 
-        public int HeightBranchRight
+        internal int HeightBranchRight
         {
             get
             {
@@ -597,9 +597,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    height_branch_right = 80;
+                    height_branch_right = 100;
                 }
                 else if (value < 2000)
                 {
@@ -612,7 +612,7 @@ namespace HVACElements
             }
         }
 
-        public int DiameterBranchRight
+        internal int DiameterBranchRight
         {
             get
             {
@@ -635,7 +635,7 @@ namespace HVACElements
             }
         }
 
-        public int RoundingBranchRight
+        internal int RoundingBranchRight
         {
             get
             {
@@ -643,11 +643,22 @@ namespace HVACElements
             }
             set
             {
-                rnd_branch_right = value;
+                if (value < 0)
+                {
+                    rnd_branch_right = 0;
+                }
+                else if (value < Math.Ceiling(0.6 * width_branch_right))
+                {
+                    rnd_branch_right = value;
+                }
+                else
+                {
+                    rnd_branch_right = (int)Math.Ceiling(0.6 * width_branch_right);
+                }
             }
         }
 
-        public BranchType BranchTypeRight
+        internal BranchType BranchTypeRight
         {
             get
             {
@@ -659,7 +670,7 @@ namespace HVACElements
             }
         }
 
-        public int AirFlowBranchLeft
+        internal int AirFlowBranchLeft
         {
             get
             {
@@ -671,7 +682,7 @@ namespace HVACElements
             }
         }
 
-        public int WidthBranchLeft
+        internal int WidthBranchLeft
         {
             get
             {
@@ -679,9 +690,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    width_branch_left = 80;
+                    width_branch_left = 100;
                 }
                 else if (value < 2000)
                 {
@@ -694,7 +705,7 @@ namespace HVACElements
             }
         }
 
-        public int HeightBranchLeft
+        internal int HeightBranchLeft
         {
             get
             {
@@ -702,9 +713,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    height_branch_left = 80;
+                    height_branch_left = 100;
                 }
                 else if (value < 2000)
                 {
@@ -717,7 +728,7 @@ namespace HVACElements
             }
         }
 
-        public int DiameterBranchLeft
+        internal int DiameterBranchLeft
         {
             get
             {
@@ -740,7 +751,7 @@ namespace HVACElements
             }
         }
 
-        public int RoundingBranchLeft
+        internal int RoundingBranchLeft
         {
             get
             {
@@ -748,11 +759,22 @@ namespace HVACElements
             }
             set
             {
-                rnd_branch_left = value;
+                if (value < 0)
+                {
+                    rnd_branch_left = 0;
+                }
+                else if (value < Math.Ceiling(0.6 * width_branch_left))
+                {
+                    rnd_branch_left = value;
+                }
+                else
+                {
+                    rnd_branch_left = (int)Math.Ceiling(0.6 * width_branch_left);
+                }
             }
         }
 
-        public DuctConnection In
+        internal DuctConnection In
         {
             get
             {
@@ -760,7 +782,7 @@ namespace HVACElements
             }
         }
 
-        public DuctConnection Out
+        internal DuctConnection Out
         {
             get
             {
@@ -768,7 +790,7 @@ namespace HVACElements
             }
         }
 
-        public BranchType BranchTypeLeft
+        internal BranchType BranchTypeLeft
         {
             get
             {
@@ -780,7 +802,7 @@ namespace HVACElements
             }
         }
 
-        public DuctType DuctType
+        internal DuctType DuctType
         {
             get
             {
@@ -813,12 +835,14 @@ namespace HVACElements
         private int height_main;
         private int diameter_main;
         private DuctType duct_type_main;
+        private TJunction _local_TJunction = null;
 
-        public TJunctionContaier(DuctType ductTypeMain, int widthMainIn, int heightMainIn,
+        internal TJunctionContaier(TJunction baseTJunction, DuctType ductTypeMain, int widthMainIn, int heightMainIn,
             int diameterMainIn, DuctType ductTypeBranch, BranchType branchTypeRight, int airFlowBranchRight,
             int widthBranchRight, int heightBranchRight, int diameterBranchRight, int roundingRight, BranchType branchTypeLeft,
             int airFlowBranchLeft, int widthBranchLeft, int heightBranchLeft, int diameterBranchLeft, int roundingLeft)
         {
+            _local_TJunction = baseTJunction;
             width_main =  widthMainIn;
             height_main = heightMainIn;
             diameter_main = diameterMainIn;
@@ -838,7 +862,7 @@ namespace HVACElements
             branch_type_left = branchTypeLeft;
         }
 
-        public int AirFlowMain
+        internal int AirFlowMain
         {
             get
             {
@@ -846,11 +870,14 @@ namespace HVACElements
             }
             set
             {
-
+                double temp = Convert.ToDouble(airflow_branch_right) / Convert.ToDouble(airflow_branch_right + airflow_branch_left);
+                airflow_branch_right = (int)Math.Round(temp * value);
+                airflow_branch_left = (int)Math.Round((1 - temp) * value);
+                _local_TJunction.AirFlow = airflow_branch_right + airflow_branch_left;
             }
         }
 
-        public int WidthMain
+        internal int WidthMain
         {
             get
             {
@@ -858,9 +885,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    width_main = 80;
+                    width_main = 100;
                 }
                 else if (value < 2000)
                 {
@@ -873,7 +900,7 @@ namespace HVACElements
             }
         }
 
-        public int HeightMain
+        internal int HeightMain
         {
             get
             {
@@ -881,9 +908,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    height_main = 80;
+                    height_main = 100;
                 }
                 else if (value < 2000)
                 {
@@ -896,7 +923,7 @@ namespace HVACElements
             }
         }
 
-        public int DiameterMain
+        internal int DiameterMain
         {
             get
             {
@@ -919,7 +946,7 @@ namespace HVACElements
             }
         }
 
-        public DuctType DuctTypeMain
+        internal DuctType DuctTypeMain
         {
             get
             {
@@ -931,7 +958,7 @@ namespace HVACElements
             }
         }
 
-        public int AirFlowBranchRight
+        internal int AirFlowBranchRight
         {
             get
             {
@@ -943,7 +970,7 @@ namespace HVACElements
             }
         }
 
-        public int WidthBranchRight
+        internal int WidthBranchRight
         {
             get
             {
@@ -951,9 +978,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    width_branch_right = 80;
+                    width_branch_right = 100;
                 }
                 else if (value < 2000)
                 {
@@ -966,7 +993,7 @@ namespace HVACElements
             }
         }
 
-        public int HeightBranchRight
+        internal int HeightBranchRight
         {
             get
             {
@@ -974,9 +1001,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    height_branch_right = 80;
+                    height_branch_right = 100;
                 }
                 else if (value < 2000)
                 {
@@ -989,7 +1016,7 @@ namespace HVACElements
             }
         }
 
-        public int DiameterBranchRight
+        internal int DiameterBranchRight
         {
             get
             {
@@ -1012,7 +1039,7 @@ namespace HVACElements
             }
         }
 
-        public int RoundingBranchRight
+        internal int RoundingBranchRight
         {
             get
             {
@@ -1020,11 +1047,22 @@ namespace HVACElements
             }
             set
             {
-                rnd_branch_right = value;
+                if (value < 0)
+                {
+                    rnd_branch_right = 0;
+                }
+                else if (value < Math.Ceiling(0.6 * width_branch_right))
+                {
+                    rnd_branch_right = value;
+                }
+                else
+                {
+                    rnd_branch_right = (int)Math.Ceiling(0.6 * width_branch_right);
+                }
             }
         }
 
-        public BranchType BranchTypeRight
+        internal BranchType BranchTypeRight
         {
             get
             {
@@ -1036,7 +1074,7 @@ namespace HVACElements
             }
         }
 
-        public int AirFlowBranchLeft
+        internal int AirFlowBranchLeft
         {
             get
             {
@@ -1048,7 +1086,7 @@ namespace HVACElements
             }
         }
 
-        public int WidthBranchLeft
+        internal int WidthBranchLeft
         {
             get
             {
@@ -1056,9 +1094,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    width_branch_left = 80;
+                    width_branch_left = 100;
                 }
                 else if (value < 2000)
                 {
@@ -1071,7 +1109,7 @@ namespace HVACElements
             }
         }
 
-        public int HeightBranchLeft
+        internal int HeightBranchLeft
         {
             get
             {
@@ -1079,9 +1117,9 @@ namespace HVACElements
             }
             set
             {
-                if (value < 80)
+                if (value < 100)
                 {
-                    height_branch_left = 80;
+                    height_branch_left = 100;
                 }
                 else if (value < 2000)
                 {
@@ -1094,7 +1132,7 @@ namespace HVACElements
             }
         }
 
-        public int DiameterBranchLeft
+        internal int DiameterBranchLeft
         {
             get
             {
@@ -1117,7 +1155,7 @@ namespace HVACElements
             }
         }
 
-        public int RoundingBranchLeft
+        internal int RoundingBranchLeft
         {
             get
             {
@@ -1125,11 +1163,22 @@ namespace HVACElements
             }
             set
             {
-                rnd_branch_left = value;
+                if (value < 0)
+                {
+                    rnd_branch_left = 0;
+                }
+                else if (value < Math.Ceiling(0.6 * width_branch_left))
+                {
+                    rnd_branch_left = value;
+                }
+                else
+                {
+                    rnd_branch_left = (int)Math.Ceiling(0.6 * width_branch_left);
+                }
             }
         }
 
-        public BranchType BranchTypeLeft
+        internal BranchType BranchTypeLeft
         {
             get
             {
@@ -1141,7 +1190,7 @@ namespace HVACElements
             }
         }
 
-        public DuctType DuctTypeBranch
+        internal DuctType DuctTypeBranch
         {
             get
             {
@@ -2035,9 +2084,9 @@ namespace HVACElements
         private readonly Branch _branch;
         private readonly ElementsCollection _elements = null;
 
-        internal TJunctionBranch(TJunctionContaier doubleJunctionContaier, Branch doubleJunctionBranch)
+        internal TJunctionBranch(TJunctionContaier TJunctionContaier, Branch doubleJunctionBranch)
         {
-            _container = doubleJunctionContaier;
+            _container = TJunctionContaier;
             _branch = doubleJunctionBranch;
             _elements = new ElementsCollection();
         }
@@ -2061,8 +2110,8 @@ namespace HVACElements
                 {
                     if (value < _container.AirFlowMain)
                     {
-                        _container.AirFlowBranchRight = value;
                         _container.AirFlowBranchLeft = _container.AirFlowMain - value;
+                        _container.AirFlowBranchRight = value;
                     }
                     else
                     {
@@ -2074,8 +2123,8 @@ namespace HVACElements
                 {
                     if (value < _container.AirFlowMain)
                     {
-                        _container.AirFlowBranchLeft = value;
                         _container.AirFlowBranchRight = _container.AirFlowMain - value;
+                        _container.AirFlowBranchLeft = value;
                     }
                     else
                     {
@@ -2906,6 +2955,26 @@ namespace HVACElements
                             (0.25 * Math.PI * Math.Pow(_local_djunction.Container.Out.Diameter / 1000.0, 2));
                     }
                 }
+            }
+        }
+
+        public DuctType DuctType
+        {
+            get
+            {
+                if (_junction_connection_side == JunctionConnectionSide.Inlet)
+                {
+                    return _local_djunction.Container.In.DuctType;
+                }
+                else
+                {
+                    return _local_djunction.Container.Out.DuctType;
+                }
+            }
+            set
+            {
+                _local_djunction.Container.In.DuctType = value;
+                _local_djunction.Container.Out.DuctType = value;
             }
         }
 
@@ -4034,7 +4103,6 @@ namespace HVACElements
             _main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
             _main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
             this.Branch.Elements._parent = this;
-            this.Branch.Elements._shaftType = HVACAcoustic.Branch.BranchRight; 
         }
 
         /// <summary>Trójnik.</summary>
@@ -4052,7 +4120,6 @@ namespace HVACElements
             _main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
             _main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
             this.Branch.Elements._parent = this;
-            this.Branch.Elements._shaftType = HVACAcoustic.Branch.BranchRight;
         }
 
         public JunctionBranch Branch
@@ -5491,8 +5558,6 @@ namespace HVACElements
             _main_out = new DoubleJunctionMain(this, JunctionConnectionSide.Outlet);
             this.BranchRight.Elements._parent = this;
             this.BranchLeft.Elements._parent = this;
-            this.BranchRight.Elements._shaftType = HVACAcoustic.Branch.BranchRight;
-            this.BranchLeft.Elements._shaftType = HVACAcoustic.Branch.BranchLeft;
         }
 
         /// <summary>Czwórnik.</summary>
@@ -5513,8 +5578,6 @@ namespace HVACElements
             _main_out = new DoubleJunctionMain(this, JunctionConnectionSide.Outlet);
             this.BranchRight.Elements._parent = this;
             this.BranchLeft.Elements._parent = this;
-            this.BranchRight.Elements._shaftType = HVACAcoustic.Branch.BranchRight;
-            this.BranchLeft.Elements._shaftType = HVACAcoustic.Branch.BranchLeft;
         }
 
         public DoubleJunctionBranch BranchRight
@@ -5570,7 +5633,7 @@ namespace HVACElements
 
                 if ((_container.AirFlowBranchRight + _container.AirFlowBranchLeft) >= value)
                 {
-                    double temp = _container.AirFlowBranchRight / (_container.AirFlowBranchRight + _container.AirFlowBranchLeft);
+                    double temp = Convert.ToDouble(_container.AirFlowBranchRight) / Convert.ToDouble(_container.AirFlowBranchRight + _container.AirFlowBranchLeft);
                     _container.AirFlowBranchRight = (int)Math.Round(temp * value);
                     _container.AirFlowBranchLeft = (int)Math.Round((1 - temp) * value);
                 }
@@ -5723,7 +5786,7 @@ namespace HVACElements
             int widthBranchRight, int heightBranchRight, int diameterBranchRight, int roundingRight, BranchType branchTypeLeft,
             int airFlowBranchLeft, int widthBranchLeft, int heightBranchLeft, int diameterBranchLeft, int roundingLeft, bool include)
         {
-            _type = ElementType.DoubleJunction;
+            _type = ElementType.TJunction;
             this.Comments = comments;
             this.Name = name;
             base.AirFlow = airFlowBranchLeft + airFlowBranchRight;
@@ -5731,7 +5794,7 @@ namespace HVACElements
             _name = this.Name;
             _counter = 1;
            
-            _container = new TJunctionContaier(ductTypeMainIn, widthMainIn, heightMainIn, diameterMainIn, ductTypeBranch, 
+            _container = new TJunctionContaier(this, ductTypeMainIn, widthMainIn, heightMainIn, diameterMainIn, ductTypeBranch, 
                 branchTypeRight, airFlowBranchRight, widthBranchRight, heightBranchRight, diameterBranchRight, 
                 roundingRight, branchTypeLeft, airFlowBranchLeft, widthBranchLeft, heightBranchLeft, diameterBranchLeft,
                 roundingLeft);
@@ -5739,29 +5802,25 @@ namespace HVACElements
             _local_left = new TJunctionBranch(_container, Branch.BranchLeft);
             this.BranchRight.Elements._parent = this;
             this.BranchLeft.Elements._parent = this;
-            this.BranchRight.Elements._shaftType = HVACAcoustic.Branch.BranchRight;
-            this.BranchLeft.Elements._shaftType = HVACAcoustic.Branch.BranchLeft;
         }
 
 
         /// <summary>Trójnik typu T.</summary>
         public TJunction()
         {
-            _type = ElementType.DoubleJunction;
+            _type = ElementType.TJunction;
             this.Comments = "";
             this.Name = (_name + _counter).ToString();
             _counter++;
             this.IsIncluded = true;
 
-            _container = new TJunctionContaier(DuctType.Rectangular, 400, 200, 450, DuctType.Rectangular,
+            _container = new TJunctionContaier(this, DuctType.Rectangular, 400, 200, 450, DuctType.Rectangular,
                 BranchType.Straight, 600, 160, 160, 200, 0, BranchType.Straight, 800, 160, 160, 200, 0);
             _local_right = new TJunctionBranch(_container, Branch.BranchRight);
             _local_left = new TJunctionBranch(_container, Branch.BranchLeft);
             base.AirFlow = 1400;
             this.BranchRight.Elements._parent = this;
             this.BranchLeft.Elements._parent = this;
-            this.BranchRight.Elements._shaftType = HVACAcoustic.Branch.BranchRight;
-            this.BranchLeft.Elements._shaftType = HVACAcoustic.Branch.BranchLeft;
         }
 
         public TJunctionBranch BranchRight
@@ -5788,6 +5847,75 @@ namespace HVACElements
             }
         }
 
+        public int Width
+        {
+            get
+            {
+                return _container.WidthMain;
+            }
+            set
+            {
+                if (value < 100)
+                {
+                    _container.WidthMain = 100;
+                }
+                else if (value < 2000)
+                {
+                    _container.WidthMain = value;
+                }
+                else
+                {
+                    _container.WidthMain = 2000;
+                }
+            }
+        }
+
+        public int Height
+        {
+            get
+            {
+                return _container.HeightMain;
+            }
+            set
+            {
+                if (value < 100)
+                {
+                    _container.HeightMain = 100;
+                }
+                else if (value < 2000)
+                {
+                    _container.HeightMain = value;
+                }
+                else
+                {
+                    _container.HeightMain = 2000;
+                }
+            }
+        }
+
+        public int Diameter
+        {
+            get
+            {
+                return _container.DiameterMain;
+            }
+            set
+            {
+                if (value < 80)
+                {
+                    _container.DiameterMain = 80;
+                }
+                else if (value < 1600)
+                {
+                    _container.DiameterMain = value;
+                }
+                else
+                {
+                    _container.DiameterMain = 1600;
+                }
+            }
+        }
+
         public new int AirFlow
         {
             get
@@ -5797,14 +5925,9 @@ namespace HVACElements
             set
             {
                 base.AirFlow = value;
-                _container.AirFlowMain = value;
-
-                if ((_container.AirFlowBranchRight + _container.AirFlowBranchLeft) >= value)
-                {
-                    double temp = _container.AirFlowBranchRight / (_container.AirFlowBranchRight + _container.AirFlowBranchLeft);
-                    _container.AirFlowBranchRight = (int)Math.Round(temp * value);
-                    _container.AirFlowBranchLeft = (int)Math.Round((1 - temp) * value);
-                }
+                double temp = Convert.ToDouble(_container.AirFlowBranchRight) / Convert.ToDouble(_container.AirFlowBranchRight + _container.AirFlowBranchLeft);
+                _container.AirFlowBranchRight = (int)Math.Round(temp * value);
+                _container.AirFlowBranchLeft = (int)Math.Round((1 - temp) * value);
             }
         }
 
@@ -5820,6 +5943,18 @@ namespace HVACElements
                 {
                     return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_container.DiameterMain / 1000.0, 2));
                 }
+            }
+        }
+
+        public DuctType DuctType
+        {
+            get
+            {
+                return _container.DuctTypeMain;
+            }
+            set
+            {
+                _container.DuctTypeMain = value;
             }
         }
 
@@ -6495,7 +6630,6 @@ namespace HVACElements
     public class ElementsCollection: IEnumerable<ElementsBase>
     {
         private List<ElementsBase> _children;
-        internal Branch _shaftType;
         internal ElementsBase _parent;
 
         /// <summary>Zwróć element o podanym indeksie.</summary>
@@ -6510,26 +6644,26 @@ namespace HVACElements
 
         public ElementsCollection()
         {
-            _shaftType = Branch.Main;
             _children = new List<ElementsBase>();
         }
 
         public ElementsCollection(ElementsBase element)
         {
-            _shaftType = Branch.Main;
-            element.Parent = _parent;
-            _children = new List<ElementsBase> { (ElementsBase)element.Clone() };
+            ElementsBase loc = (ElementsBase)element.Clone();
+            loc.Parent = _parent;
+            _children = new List<ElementsBase>() { loc };
         }
 
         public ElementsCollection(params ElementsBase[] element)
         {
-            _shaftType = Branch.Main;
             _children = new List<ElementsBase>();
+            ElementsBase loc = null;
 
             foreach (ElementsBase eb in element)
             {
-                eb.Parent = _parent;
-                _children.Add((ElementsBase)eb.Clone());
+                loc = (ElementsBase)eb.Clone();
+                loc.Parent = _parent;
+                _children.Add(loc);
             }
         }
 
@@ -6537,18 +6671,22 @@ namespace HVACElements
         /// <param name="element">Element do dodania.</param>
         public void Add(ElementsBase element)
         {
-            element.Parent = _parent;
-            _children.Add(((ElementsBase)element.Clone()));
+            ElementsBase loc = (ElementsBase)element.Clone();
+            loc.Parent = _parent;
+            _children.Add(loc);
         }
 
         /// <summary>Dodaj nową grupę elementów.</summary>
         /// <param name="element">Tablica elementów do dodania.</param>
         public void AddRange(params ElementsBase[] element)
         {
+            ElementsBase loc = null;
+
             foreach (ElementsBase eb in element)
             {
-                eb.Parent = _parent;
-                _children.Add((ElementsBase)eb.Clone());
+                loc = (ElementsBase)eb.Clone();
+                loc.Parent = _parent;
+                _children.Add(loc);
             }
         }
 
@@ -6568,26 +6706,62 @@ namespace HVACElements
         }
 
         /// <summary>Oblicz poziom ciśnienia akustycznego.</summary>
-        public double[] ComputeSoundPressureLevel()
+        public Dictionary<Room, double[]> ComputeSoundPressureLevel()
         {
-            double[] result = new double[8] { -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000 };
+            double[] loc_result = new double[8] { -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000 };
+            Dictionary<Room, double[]> overall_result = new Dictionary<Room, double[]>();
+            List<List<ElementsBase>> local = ElementsLists();
 
-            #region Exceptetions
-            if (_children == null) { throw new ArgumentNullException(); }
-            else if (_children.Count == 0) { throw new Exception("Brak wystarczającej ilości elementów do przeprowadzenia obliczeń."); }
-            else if ((from element in _children where element.Type == ElementType.Room select element).ToList().Count > 1)
-            { throw new Exception("Zbyt duża liczba elementów typu Room w sekwencji."); }
-            else if ((from element in _children where element.Type == ElementType.Room select element).ToList().Count == 1 && _children.Last().Type != ElementType.Room)
-            { throw new Exception("Nieprawidłowa kolejność elementów w sekwencji."); }
-            #endregion
-
-            for (int i = 0; i < _children.Count; i++)
+            foreach (List<ElementsBase> list in local)
             {
-                result = HVACAcoustic.MathOperations.OctaveSubstract(result, _children[i].Attenuation());
-                result = HVACAcoustic.MathOperations.OctaveDecibelAdd(result, _children[i].Noise());
-            }
+                for (int i = list.Count - 1; i > 0; i--)
+                {
+                    if (list[i-1].Parent == list[i])
+                    {
+                        if (list[i] is Junction)
+                        {
+                            loc_result = MathOperations.OctaveSubstract(loc_result, ((Junction)list[i]).Branch.Attenuation());
+                            loc_result = MathOperations.OctaveDecibelAdd(loc_result, ((Junction)list[i]).Branch.Noise());
+                        }
+                        else if (list[i] is DoubleJunction)
+                        {
+                            if (((DoubleJunction)list[i]).BranchRight.Elements.Contains(list[i - 1]))
+                            {
+                                loc_result = MathOperations.OctaveSubstract(loc_result, ((DoubleJunction)list[i]).BranchRight.Attenuation());
+                                loc_result = MathOperations.OctaveDecibelAdd(loc_result, ((DoubleJunction)list[i]).BranchRight.Noise());
+                            }
+                            else
+                            {
+                                loc_result = MathOperations.OctaveSubstract(loc_result, ((DoubleJunction)list[i]).BranchLeft.Attenuation());
+                                loc_result = MathOperations.OctaveDecibelAdd(loc_result, ((DoubleJunction)list[i]).BranchLeft.Noise());
+                            }
+                        }
+                        else if (list[i] is TJunction)
+                        {
+                            if (((TJunction)list[i]).BranchRight.Elements.Contains(list[i - 1]))
+                            {
+                                loc_result = MathOperations.OctaveSubstract(loc_result, ((TJunction)list[i]).BranchRight.Attenuation());
+                                loc_result = MathOperations.OctaveDecibelAdd(loc_result, ((TJunction)list[i]).BranchRight.Noise());
+                            }
+                            else
+                            {
+                                loc_result = MathOperations.OctaveSubstract(loc_result, ((TJunction)list[i]).BranchLeft.Attenuation());
+                                loc_result = MathOperations.OctaveDecibelAdd(loc_result, ((TJunction)list[i]).BranchLeft.Noise());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        loc_result = MathOperations.OctaveSubstract(loc_result, list[i].Attenuation());
+                        loc_result = MathOperations.OctaveDecibelAdd(loc_result, list[i].Noise());
+                    }
+                }
 
-            return result;
+                loc_result = MathOperations.OctaveSubstract(loc_result, list[0].Attenuation());
+                loc_result = MathOperations.OctaveDecibelAdd(loc_result, list[0].Noise());
+                overall_result.Add((Room)list[0], loc_result);
+            }
+            return overall_result;
         }
 
         /// <summary>Znajdź element o podanej nazwie.</summary>
@@ -6595,6 +6769,7 @@ namespace HVACElements
         public ElementsBase Find(string elementName)
         {
             ElementsBase result = null;
+            ElementsBase loc = null;
 
             foreach (ElementsBase element in _children)
             {
@@ -6605,17 +6780,473 @@ namespace HVACElements
                 }
                 else if (element.Type == ElementType.Junction)
                 {
-                    ((Junction)element).Branch.Elements.Find(elementName);
+                    loc = ((Junction)element).Branch.Elements.Find(elementName);
+
+                    if (loc != null)
+                    {
+                        result = loc;
+                        break;
+                    }
                 }
                 else if (element.Type == ElementType.DoubleJunction)
                 {
-                    ElementsCollection _loc = new ElementsCollection();
-                    foreach (ElementsBase _eb in ((DoubleJunction)element).BranchRight.Elements) { _loc.Add(_eb); }
-                    foreach (ElementsBase _eb in ((DoubleJunction)element).BranchLeft.Elements) { _loc.Add(_eb); }
-                    _loc.Find(elementName);
+                    loc = ((DoubleJunction)element).BranchRight.Elements.Find(elementName);
+
+                    if (loc != null)
+                    {
+                        result = loc;
+                        break;
+                    }
+                    else
+                    {
+                        loc = ((DoubleJunction)element).BranchLeft.Elements.Find(elementName);
+
+                        if (loc != null)
+                        {
+                            result = loc;
+                            break;
+                        }
+                    }
+                }
+                else if (element.Type == ElementType.TJunction)
+                {
+                    loc = ((TJunction)element).BranchRight.Elements.Find(elementName);
+
+                    if (loc != null)
+                    {
+                        result = loc;
+                        break;
+                    }
+                    else
+                    {
+                        loc = ((TJunction)element).BranchLeft.Elements.Find(elementName);
+
+                        if (loc != null)
+                        {
+                            result = loc;
+                            break;
+                        }
+                    }
                 }
             }
             return result;
+        }
+
+        /// <summary>Zwróć ciąg elementów do obiektu o podanej nazwie.</summary>
+        /// <param name="elementName">Nazwa elementu.</param>
+        public List<ElementsBase> ElementsRow(string elementName)
+        {
+            ElementsBase _temp = Find(elementName);
+            List<ElementsBase> _loc = new List<ElementsBase>();
+            ElementsBase _dtee = _temp;
+            int _index = 0;
+
+            if (_temp.Parent != null)
+            {
+                do
+                {
+                    #region ElementType
+                    if (_temp.Parent is Junction)
+                    {
+                        Check(((Junction)_temp.Parent).Branch.Elements);
+                        if (_dtee != null)
+                        {
+                            for (int j = ((Junction)_temp.Parent).Branch.Elements.Count() - 1; j >= 0; j--)
+                            {
+                                if (_dtee == ((Junction)_temp.Parent).Branch.Elements[j]) { _index = j; break; }
+                            }
+                        }
+                        else
+                        {
+                            if (((Junction)_temp.Parent).Branch.Elements.Last().Type == ElementType.Room) { _index = ((Junction)_temp.Parent).Branch.Elements.Count() - 2; }
+                            else { _index = ((Junction)_temp.Parent).Branch.Elements.Count() - 1; }
+                        }
+
+                        for (int j = _index; j >= 0; j--)
+                        {
+                            _loc.Add(((Junction)_temp.Parent).Branch.Elements[j]);
+                        }
+
+                        _dtee = null;
+                    }
+                    else if (_temp.Parent is DoubleJunction)
+                    {
+                        if (((DoubleJunction)_temp.Parent).BranchRight.Elements.Contains(_temp) == true)
+                        {
+                            Check(((DoubleJunction)_temp.Parent).BranchRight.Elements);
+                            if (_dtee != null)
+                            {
+                                for (int j = ((DoubleJunction)_temp.Parent).BranchRight.Elements.Count() - 1; j >= 0; j--)
+                                {
+                                    if (_dtee == ((DoubleJunction)_temp.Parent).BranchRight.Elements[j]) { _index = j; break; }
+                                }
+                            }
+                            else
+                            {
+                                if (((DoubleJunction)_temp.Parent).BranchRight.Elements.Last().Type == ElementType.Room) { _index = ((DoubleJunction)_temp.Parent).BranchRight.Elements.Count() - 2; }
+                                else { _index = ((DoubleJunction)_temp.Parent).BranchRight.Elements.Count() - 1; }
+                            }
+
+                            for (int j = _index; j >= 0; j--)
+                            {
+                                _loc.Add(((DoubleJunction)_temp.Parent).BranchRight.Elements[j]);
+                            }
+                        }
+                        else
+                        {
+                            Check(((DoubleJunction)_temp.Parent).BranchLeft.Elements);
+                            if (_dtee != null)
+                            {
+                                for (int j = ((DoubleJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; j >= 0; j--)
+                                {
+                                    if (_dtee == ((DoubleJunction)_temp.Parent).BranchLeft.Elements[j]) { _index = j; break; }
+                                }
+                            }
+                            else
+                            {
+                                if (((DoubleJunction)_temp.Parent).BranchLeft.Elements.Last().Type == ElementType.Room) { _index = ((DoubleJunction)_temp.Parent).BranchLeft.Elements.Count() - 2; }
+                                else { _index = ((DoubleJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; }
+                            }
+
+                            for (int j = _index; j >= 0; j--)
+                            {
+                                _loc.Add(((DoubleJunction)_temp.Parent).BranchLeft.Elements[j]);
+                            }
+                        }
+
+                        _dtee = _temp.Parent;
+                    }
+                    else if (_temp.Parent is TJunction)
+                    {
+                        if (((TJunction)_temp.Parent).BranchRight.Elements.Contains(_temp) == true)
+                        {
+                            Check(((TJunction)_temp.Parent).BranchRight.Elements);
+                            if (_dtee != null)
+                            {
+                                for (int j = ((TJunction)_temp.Parent).BranchRight.Elements.Count() - 1; j >= 0; j--)
+                                {
+                                    if (_dtee == ((TJunction)_temp.Parent).BranchRight.Elements[j]) { _index = j; break; }
+                                }
+                            }
+                            else
+                            {
+                                if (((TJunction)_temp.Parent).BranchRight.Elements.Last().Type == ElementType.Room) { _index = ((TJunction)_temp.Parent).BranchRight.Elements.Count() - 2; }
+                                else { _index = ((TJunction)_temp.Parent).BranchRight.Elements.Count() - 1; }
+                            }
+
+                            for (int j = _index; j >= 0; j--)
+                            {
+                                _loc.Add(((TJunction)_temp.Parent).BranchRight.Elements[j]);
+                            }
+                        }
+                        else
+                        {
+                            Check(((TJunction)_temp.Parent).BranchLeft.Elements);
+                            if (_dtee != null)
+                            {
+                                for (int j = ((TJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; j >= 0; j--)
+                                {
+                                    if (_dtee == ((TJunction)_temp.Parent).BranchLeft.Elements[j]) { _index = j; break; }
+                                }
+                            }
+                            else
+                            {
+                                if (((TJunction)_temp.Parent).BranchLeft.Elements.Last().Type == ElementType.Room) { _index = ((TJunction)_temp.Parent).BranchLeft.Elements.Count() - 2; }
+                                else { _index = ((TJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; }
+                            }
+
+                            for (int j = _index; j >= 0; j--)
+                            {
+                                _loc.Add(((TJunction)_temp.Parent).BranchLeft.Elements[j]);
+                            }
+                        }
+
+                        _dtee = null;
+                    }
+                    #endregion
+
+                    _temp = _temp.Parent;
+                } while (_temp.Parent != null);
+
+                Check(this);
+                for (int j = _children.Count - 1; j >= 0; j--)
+                {
+                    if (_temp == _children[j]) { _index = j; break; }
+                }
+
+                for (int j = _index; j >= 0; j--)
+                {
+                    _loc.Add(_children[j]);
+                }
+            }
+            else
+            {
+                Check(this);
+                for (int j = _children.Count - 1; j >= 0; j--)
+                {
+                    if (_temp == _children[j]) { _index = j; break; }
+                }
+
+                for (int j = _index; j >= 0; j--)
+                {
+                    _loc.Add(_children[j]);
+                }
+            }
+
+            _loc.Reverse();
+            return _loc;
+        }
+
+        private ElementsBase FindElementType(List<ElementsBase> Exist)
+        {
+            ElementsBase result = null;
+            ElementsBase loc = null;
+
+            foreach (ElementsBase element in _children)
+            {
+                if (element.Type == ElementType.Room && Exist.Contains(element) == false)
+                {
+                    result = element;
+                    break;
+                }
+                else if (element.Type == ElementType.Junction)
+                {
+                    loc = ((Junction)element).Branch.Elements.FindElementType(Exist);
+
+                    if (loc != null)
+                    {
+                        result = loc;
+                        break;
+                    }
+                }
+                else if (element.Type == ElementType.DoubleJunction)
+                {
+                    loc = ((DoubleJunction)element).BranchRight.Elements.FindElementType(Exist);
+
+                    if (loc != null)
+                    {
+                        result = loc;
+                        break;
+                    }
+                    else
+                    {
+                        loc = ((DoubleJunction)element).BranchLeft.Elements.FindElementType(Exist);
+
+                        if (loc != null)
+                        {
+                            result = loc;
+                            break;
+                        }
+                    }
+                }
+                else if (element.Type == ElementType.TJunction)
+                {
+                    loc = ((TJunction)element).BranchRight.Elements.FindElementType(Exist);
+
+                    if (loc != null)
+                    {
+                        result = loc;
+                        break;
+                    }
+                    else
+                    {
+                        loc = ((TJunction)element).BranchLeft.Elements.FindElementType(Exist);
+
+                        if (loc != null)
+                        {
+                            result = loc;
+                            break;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private List<List<ElementsBase>> ElementsLists()
+        {
+            List<ElementsBase> _count = new List<ElementsBase>();
+
+            do
+            {
+                _count.Add(FindElementType(_count));
+            } while (FindElementType(_count) != null);
+            
+            List<List<ElementsBase>> _result = new List<List<ElementsBase>>();
+
+            for (int i = 0; i < _count.Count; i++)
+            {
+                ElementsBase _temp = _count[i];
+                List<ElementsBase> _loc = new List<ElementsBase>() { _count[i] };
+                ElementsBase _dtee = null;
+
+                if (_temp.Parent != null)
+                {
+                    int _index = 0;
+
+                    do
+                    {
+                        #region ElementType
+                        if (_temp.Parent is Junction)
+                        {
+                            Check(((Junction)_temp.Parent).Branch.Elements);
+                            if (_dtee != null)
+                            {
+                                for (int j = ((Junction)_temp.Parent).Branch.Elements.Count() - 1; j >= 0; j--)
+                                {
+                                    if (_dtee == ((Junction)_temp.Parent).Branch.Elements[j]) { _index = j; break; }
+                                }
+                            }
+                            else
+                            {
+                                if (((Junction)_temp.Parent).Branch.Elements.Last().Type == ElementType.Room) { _index = ((Junction)_temp.Parent).Branch.Elements.Count() - 2; }
+                                else { _index = ((Junction)_temp.Parent).Branch.Elements.Count() - 1; }
+                            }
+
+                            for (int j = _index; j >= 0; j--)
+                            {
+                                _loc.Add(((Junction)_temp.Parent).Branch.Elements[j]);
+                            }
+
+                            _dtee = null;
+                        }
+                        else if (_temp.Parent is DoubleJunction)
+                        {
+                            if (((DoubleJunction)_temp.Parent).BranchRight.Elements.Contains(_temp) == true)
+                            {
+                                Check(((DoubleJunction)_temp.Parent).BranchRight.Elements);
+                                if (_dtee != null)
+                                {
+                                    for (int j = ((DoubleJunction)_temp.Parent).BranchRight.Elements.Count() - 1; j >= 0; j--)
+                                    {
+                                        if (_dtee == ((DoubleJunction)_temp.Parent).BranchRight.Elements[j]) { _index = j; break; }
+                                    }
+                                }
+                                else
+                                {
+                                    if (((DoubleJunction)_temp.Parent).BranchRight.Elements.Last().Type == ElementType.Room) { _index = ((DoubleJunction)_temp.Parent).BranchRight.Elements.Count() - 2; }
+                                    else { _index = ((DoubleJunction)_temp.Parent).BranchRight.Elements.Count() - 1; }
+                                }
+
+                                for (int j = _index; j >= 0; j--)
+                                {
+                                    _loc.Add(((DoubleJunction)_temp.Parent).BranchRight.Elements[j]);
+                                }
+                            }
+                            else
+                            {
+                                Check(((DoubleJunction)_temp.Parent).BranchLeft.Elements);
+                                if (_dtee != null)
+                                {
+                                    for (int j = ((DoubleJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; j >= 0; j--)
+                                    {
+                                        if (_dtee == ((DoubleJunction)_temp.Parent).BranchLeft.Elements[j]) { _index = j; break; }
+                                    }
+                                }
+                                else
+                                {
+                                    if (((DoubleJunction)_temp.Parent).BranchLeft.Elements.Last().Type == ElementType.Room) { _index = ((DoubleJunction)_temp.Parent).BranchLeft.Elements.Count() - 2; }
+                                    else { _index = ((DoubleJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; }
+                                }
+
+                                for (int j = _index; j >= 0; j--)
+                                {
+                                    _loc.Add(((DoubleJunction)_temp.Parent).BranchLeft.Elements[j]);
+                                }
+                            }
+
+                            _dtee = _temp.Parent;
+                        }
+                        else if (_temp.Parent is TJunction)
+                        {
+                            if (((TJunction)_temp.Parent).BranchRight.Elements.Contains(_temp) == true)
+                            {
+                                Check(((TJunction)_temp.Parent).BranchRight.Elements);
+                                if (_dtee != null)
+                                {
+                                    for (int j = ((TJunction)_temp.Parent).BranchRight.Elements.Count() - 1; j >= 0; j--)
+                                    {
+                                        if (_dtee == ((TJunction)_temp.Parent).BranchRight.Elements[j]) { _index = j; break; }
+                                    }
+                                }
+                                else
+                                {
+                                    if (((TJunction)_temp.Parent).BranchRight.Elements.Last().Type == ElementType.Room) { _index = ((TJunction)_temp.Parent).BranchRight.Elements.Count() - 2; }
+                                    else { _index = ((TJunction)_temp.Parent).BranchRight.Elements.Count() - 1; }
+                                }
+
+                                for (int j = _index; j >= 0; j--)
+                                {
+                                    _loc.Add(((TJunction)_temp.Parent).BranchRight.Elements[j]);
+                                }
+                            }
+                            else
+                            {
+                                Check(((TJunction)_temp.Parent).BranchLeft.Elements);
+                                if (_dtee != null)
+                                {
+                                    for (int j = ((TJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; j >= 0; j--)
+                                    {
+                                        if (_dtee == ((TJunction)_temp.Parent).BranchLeft.Elements[j]) { _index = j; break; }
+                                    }
+                                }
+                                else
+                                {
+                                    if (((TJunction)_temp.Parent).BranchLeft.Elements.Last().Type == ElementType.Room) { _index = ((TJunction)_temp.Parent).BranchLeft.Elements.Count() - 2; }
+                                    else { _index = ((TJunction)_temp.Parent).BranchLeft.Elements.Count() - 1; }
+                                }
+
+                                for (int j = _index; j >= 0; j--)
+                                {
+                                    _loc.Add(((TJunction)_temp.Parent).BranchLeft.Elements[j]);
+                                }
+                            }
+
+                            _dtee = null;
+                        }
+                        #endregion
+
+                        _temp = _temp.Parent;
+                    } while (_temp.Parent != null);
+
+                    Check(this);
+                    for (int j = _children.Count - 1; j >= 0; j--)
+                    {
+                        if (_temp == _children[j]) { _index = j; break; }
+                    }
+
+                    for (int j = _index; j >= 0; j--)
+                    {
+                        _loc.Add(_children[j]);
+                    }
+                }
+                else
+                {
+                    Check(this);
+                    for (int j = _children.Count - 2; j >= 0; j-- )
+                    {
+                        _loc.Add(_children[j]);
+                    }
+                }
+
+                _result.Add(_loc);
+            }
+            return _result;
+        }
+
+        private void Check(ElementsCollection elementsCollection)
+        {
+            if (elementsCollection == null) { throw new ArgumentNullException(); }
+            else if (elementsCollection.Count() == 0) { throw new Exception("Brak wystarczającej ilości elementów do przeprowadzenia obliczeń."); }
+            else if ((from element in elementsCollection where element.Type == ElementType.Room select element).ToList().Count > 1)
+            { throw new Exception("Zbyt duża liczba elementów typu Room w sekwencji."); }
+            else if ((from element in elementsCollection where element.Type == ElementType.TJunction select element).ToList().Count > 1)
+            { throw new Exception("Zbyt duża liczba elementów typu T-trónik w sekwencji."); }
+            else if (elementsCollection.Last().Type != ElementType.Room && elementsCollection.Last().Type != ElementType.TJunction)
+            { throw new Exception("Nieprawidłowa kolejność elementów w sekwencji."); }
+            else if ((from element in elementsCollection where element.Type == ElementType.TJunction select element).ToList().Count == 1 &&
+                (from element in elementsCollection where element.Type == ElementType.Room select element).ToList().Count == 1)
+            { throw new Exception("Elementy typu T-trónik i Room nie mogą występować w tym samym ciągu."); }
         }
 
         public IEnumerator<ElementsBase> GetEnumerator()
