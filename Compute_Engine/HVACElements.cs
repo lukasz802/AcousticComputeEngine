@@ -8,7 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace HVACElements
 {
-    public interface IBranch: IDimensions, IElementsContainer
+    public interface IBranch: IRectangular, IRound, IVelocity, IElementsContainer
     {
         double[] Attenuation();
         double[] Noise();
@@ -17,12 +17,61 @@ namespace HVACElements
         BranchType BranchType { get; set; }
     }
 
-    public interface IDimensions
+    public interface IRectangular
     {
         int Width { get; set; }
         int Height { get; set; }
+    }
+
+    public interface IRound
+    {
         int Diameter { get; set; }
+    }
+
+    public interface IVelocity
+    {
         double Velocity { get; }
+    }
+
+    public interface IChangeableDimensions<T> where T: IRectangular, IRound, IVelocity
+    {
+        T Inlet { get; }
+        T Outlet { get; }
+    }
+
+    public interface IDoubleBranchingElement<T> where T: IBranch
+    {
+        T BranchRight { get; }
+        T BranchLeft { get; }
+    }
+
+    public interface ISingleBranchingElement<T> where T : IBranch
+    {
+        T Branch { get; }
+    }
+
+    public interface IOctaveBandAttenuation
+    {
+        int OctaveBand63Hz { get; set; }
+        int OctaveBand125Hz { get; set; }
+        int OctaveBand250Hz { get; set; }
+        int OctaveBand500Hz { get; set; }
+        int OctaveBand1000Hz { get; set; }
+        int OctaveBand2000Hz { get; set; }
+        int OctaveBand4000Hz { get; set; }
+        int OctaveBand8000Hz { get; set; }
+    }
+
+    public interface IOctaveBandAbsorption
+    {
+        double OctaveBand63Hz { get; set; }
+        double OctaveBand125Hz { get; set; }
+        double OctaveBand250Hz { get; set; }
+        double OctaveBand500Hz { get; set; }
+        double OctaveBand1000Hz { get; set; }
+        double OctaveBand2000Hz { get; set; }
+        double OctaveBand4000Hz { get; set; }
+        double OctaveBand8000Hz { get; set; }
     }
 
     public interface IElementsContainer
@@ -1204,7 +1253,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class SoundAttenuation
+    public class SoundAttenuation: IOctaveBandAttenuation
     {
         private int _octaveBand63Hz;
         private int _octaveBand125Hz;
@@ -1399,7 +1448,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class RoomConstant
+    public class RoomConstant: IOctaveBandAbsorption
     {
         private double _octaveBand63Hz;
         private double _octaveBand125Hz;
@@ -2521,7 +2570,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class DuctConnection: IDimensions
+    public class DuctConnection: IRectangular, IRound, IVelocity
     {
         private DuctType _duct_type;
         private int _width;
@@ -2660,15 +2709,12 @@ namespace HVACElements
 
         protected void OnDimensionsChanged()
         {
-            if (DimensionsChanged != null)
-            {
-                DimensionsChanged(this, EventArgs.Empty);
-            }
+            DimensionsChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
     [Serializable]
-    public class JunctionMain: IDimensions
+    public class JunctionMain: IRectangular, IRound, IVelocity
     {
         private Junction _local_junction = null;
         private JunctionConnectionSide? _junction_connection_side = null;
@@ -2836,7 +2882,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class DoubleJunctionMain : IDimensions
+    public class DoubleJunctionMain : IRectangular, IRound, IVelocity
     {
         private DoubleJunction _local_djunction = null;
         private JunctionConnectionSide? _junction_connection_side = null;
@@ -3069,7 +3115,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Duct : ElementsBase, IDimensions
+    public class Duct : ElementsBase, IRectangular, IRound, IVelocity
     {
         private static int _counter = 1;
         private static string _name = "dct_";
@@ -3350,7 +3396,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Diffuser : ElementsBase
+    public class Diffuser : ElementsBase, IChangeableDimensions<DuctConnection>
     {
         private static int _counter = 1;
         private static string _name = "dfs_";
@@ -3514,7 +3560,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Bow : ElementsBase, IDimensions
+    public class Bow : ElementsBase, IRectangular, IRound, IVelocity
     {
         private static int _counter = 1;
         private static string _name = "bow_";
@@ -3798,7 +3844,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Elbow : ElementsBase
+    public class Elbow : ElementsBase, IRectangular, IVelocity
     {
         private static int _counter = 1;
         private static string _name = "elb_";
@@ -4055,7 +4101,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Junction : ElementsBase
+    public class Junction : ElementsBase, IChangeableDimensions<JunctionMain>, ISingleBranchingElement<JunctionBranch>
     {
         private static int _counter = 1;
         private static string _name = "jnt_";
@@ -4257,7 +4303,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Plenum : ElementsBase
+    public class Plenum : ElementsBase, IChangeableDimensions<DuctConnection>
     {
         private static int _counter = 1;
         private static string _name = "pln_";
@@ -4736,7 +4782,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Damper : ElementsBase, IDimensions
+    public class Damper : ElementsBase, IRectangular, IRound, IVelocity
     {
         private static int _counter = 1;
         private static string _name = "dmp_";
@@ -4991,7 +5037,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Grill: ElementsBase, IDimensions
+    public class Grill: ElementsBase, IRectangular, IRound, IVelocity
     {
         private static int _counter = 1;
         private static string _name = "grill_";
@@ -5485,7 +5531,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class DoubleJunction : ElementsBase
+    public class DoubleJunction : ElementsBase, IChangeableDimensions<DoubleJunctionMain>, IDoubleBranchingElement<DoubleJunctionBranch>
     {
         private static int _counter = 1;
         private static string _name = "djnt_";
@@ -5751,7 +5797,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class TJunction : ElementsBase
+    public class TJunction : ElementsBase, IDoubleBranchingElement<TJunctionBranch>
     {
         private static int _counter = 1;
         private static string _name = "tjnt_";
@@ -6041,7 +6087,7 @@ namespace HVACElements
     }
 
     [Serializable]
-    public class Silencer : ElementsBase, IDimensions
+    public class Silencer : ElementsBase, IRectangular, IRound, IVelocity
     {
         private static int _counter = 1;
         private static string _name = "sln_";
