@@ -41,9 +41,43 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HVACAcoustic.cs" />
-    <Compile Include="HVACElements.cs" />
+    <Compile Include="Elements\Bow.cs" />
+    <Compile Include="Elements\Damper.cs" />
+    <Compile Include="Elements\Diffuser.cs" />
+    <Compile Include="Elements\DoubleJunction.cs" />
+    <Compile Include="Elements\DoubleJunctionBranch.cs" />
+    <Compile Include="Elements\DoubleJunctionConainer.cs" />
+    <Compile Include="Elements\DoubleJunctionMain.cs" />
+    <Compile Include="Elements\DuctConnection.cs" />
+    <Compile Include="Elements\Elbow.cs" />
+    <Compile Include="Elements\ElementsBase.cs" />
+    <Compile Include="Elements\Fan.cs" />
+    <Compile Include="Elements\Grill.cs" />
+    <Compile Include="Elements\GrillOrifice.cs" />
+    <Compile Include="Elements\Junction.cs" />
+    <Compile Include="Elements\JunctionBranch.cs" />
+    <Compile Include="Elements\JunctionMain.cs" />
+    <Compile Include="Elements\Plenum.cs" />
+    <Compile Include="Elements\Room.cs" />
+    <Compile Include="Elements\RoomConstant.cs" />
+    <Compile Include="Elements\Silencer.cs" />
+    <Compile Include="Elements\SoundAttenuation.cs" />
+    <Compile Include="Elements\TJunction.cs" />
+    <Compile Include="Elements\TJunctionBranch.cs" />
+    <Compile Include="Elements\TJunctionContaier.cs" />
+    <Compile Include="Functions\Attenuation.cs" />
+    <Compile Include="Functions\Breakout.cs" />
+    <Compile Include="Functions\Criteria.cs" />
+    <Compile Include="Elements\Duct.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="ElementsCollection.cs" />
+    <Compile Include="Functions\MathOperation.cs" />
+    <Compile Include="Functions\Noise.cs" />
+    <Compile Include="Interfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Functions\Transmission.cs" />
+    <Compile Include="Functions\UnitConversion.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
