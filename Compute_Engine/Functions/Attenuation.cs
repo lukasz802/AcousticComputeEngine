@@ -1,14 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
 
 namespace Compute_Engine
 {
     public static class Attenuation
     {
+        #region Fields and constans
+
+        static private readonly double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
+
+        #endregion
+
+        #region Public methods
+
         public static double[] Diffuser(double a1, double a2, double l)
         {
             //a1-powierzchnia netto przewodu przed zmianą przekroju, m2
@@ -16,7 +20,6 @@ namespace Compute_Engine
             //l-długość kształtki, m
             double co = 340.3;
             double k, la, i, n;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
 
             for (int j = 0; j < oct.Length; j++)
@@ -45,12 +48,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] JunctionMainRoundBranchRound(Branch which_branch, BranchType branchType, double d_start, double d_end, double d_branch)
+        public static double[] JunctionMainRoundBranchRound(BranchDirection which_branch, BranchType branchType, double d_start, double d_end, double d_branch)
         {
             double[] loc = JunctionMainRoundEq(which_branch, d_start, d_end, Math.Pow(d_branch, 2) * 0.25 * Math.PI);
             double[] attn = new double[8];
 
-            if (which_branch != Branch.Main)
+            if (which_branch != BranchDirection.Main)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -78,12 +81,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] JunctionMainRoundBranchRectangular(Branch which_branch, BranchType branchType, double d_start, double d_end, double w_branch, double h_branch)
+        public static double[] JunctionMainRoundBranchRectangular(BranchDirection which_branch, BranchType branchType, double d_start, double d_end, double w_branch, double h_branch)
         {
             double[] loc = JunctionMainRoundEq(which_branch, d_start, d_end, w_branch * h_branch);
             double[] attn = new double[8];
 
-            if (which_branch != Branch.Main)
+            if (which_branch != BranchDirection.Main)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -111,12 +114,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] JunctionMainRectangularBranchRound(Branch which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double d_branch)
+        public static double[] JunctionMainRectangularBranchRound(BranchDirection which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double d_branch)
         {
             double[] loc = JunctionMainRectangularEq(which_branch, w_start * h_start, w_end * h_end, Math.Pow(d_branch, 2) * 0.25 * Math.PI, Math.Max(w_start, h_start));
             double[] attn = new double[8];
 
-            if (which_branch != Branch.Main)
+            if (which_branch != BranchDirection.Main)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -144,12 +147,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] JunctionMainRectangularBranchRectangular(Branch which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double w_branch, double h_branch)
+        public static double[] JunctionMainRectangularBranchRectangular(BranchDirection which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double w_branch, double h_branch)
         {
-            double[] loc = JunctionMainRectangularEq(which_branch, w_start * h_start, w_end * w_end, w_branch * h_branch, Math.Max(w_start, h_start));
+            double[] loc = JunctionMainRectangularEq(which_branch, w_start * h_start, w_end * h_end, w_branch * h_branch, Math.Max(w_start, h_start));
             double[] attn = new double[8];
 
-            if (which_branch != Branch.Main)
+            if (which_branch != BranchDirection.Main)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -177,13 +180,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        private static double[] JunctionMainRoundEq(Branch which_branch, double d_poc, double d_kon, double a_odg)
+        private static double[] JunctionMainRoundEq(BranchDirection which_branch, double d_poc, double d_kon, double a_odg)
         {
             //d_poc-średnica netto wlotu do trójnika, m
             //d_kon-średnica netto wylotu z trójnika, m
             //a_odg-powierzchnia netto odgałęzienia, m2
             double fco, a_kon, a_poc;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             a_kon = 0.25 * Math.PI * Math.Pow(d_kon, 2);
             a_poc = 0.25 * Math.PI * Math.Pow(d_poc, 2);
@@ -191,7 +193,7 @@ namespace Compute_Engine
 
             for (int i = 0; i < oct.Length; i++)
             {
-                if (which_branch == Branch.Main)
+                if (which_branch == BranchDirection.Main)
                 {
                     if (oct[i] < Noise.Oct_BFI(fco))
                     {
@@ -217,19 +219,19 @@ namespace Compute_Engine
             return attn;
         }
 
-        private static double[] JunctionMainRectangularEq(Branch which_branch, double a_poc, double a_kon, double a_odg, double a_in)
+        private static double[] JunctionMainRectangularEq(BranchDirection which_branch, double a_poc, double a_kon, double a_odg, double a_in)
         {
             //a_poc-powierzchnia netto wlotu do trójnika, m2
             //a_kon-powierzchnia netto wylotu z trójnika, m2
             //a_odg-powierzchnia netto odgałęzienia, m2
             //a_in-większy wymiar wlotowego przekroju poprzecznego, m
-            double fco; double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
+            double fco;
             double[] attn = new double[8];
             fco = 1125 / UnitConvertion.MToFt(a_in);
 
             for (int i = 0; i < oct.Length; i++)
             {
-                if (which_branch == Branch.Main)
+                if (which_branch == BranchDirection.Main)
                 {
                     if (oct[i] < Noise.Oct_BFI(fco))
                     {
@@ -255,12 +257,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] DoubleJunctionMainRoundBranchRound(Branch which_branch, BranchType branchType, double d_start, double d_end, double d_branch_right, double d_branch_left)
+        public static double[] DoubleJunctionMainRoundBranchRound(BranchDirection which_branch, BranchType branchType, double d_start, double d_end, double d_branch_right, double d_branch_left)
         {
             double[] loc = DoubleJunctionMainRoundEq(which_branch, d_start, d_end, Math.Pow(d_branch_right, 2) * 0.25 * Math.PI, Math.Pow(d_branch_left, 2) * 0.25 * Math.PI);
             double[] attn = new double[8];
 
-            if (which_branch == Branch.BranchRight)
+            if (which_branch == BranchDirection.BranchRight)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -281,7 +283,7 @@ namespace Compute_Engine
                     }
                 }
             }
-            else if (which_branch == Branch.BranchLeft)
+            else if (which_branch == BranchDirection.BranchLeft)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -309,12 +311,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] DoubleJunctionMainRoundBranchRectangular(Branch which_branch, BranchType branchType, double d_start, double d_end, double w_branch_right, double h_branch_right, double w_branch_left, double h_branch_left)
+        public static double[] DoubleJunctionMainRoundBranchRectangular(BranchDirection which_branch, BranchType branchType, double d_start, double d_end, double w_branch_right, double h_branch_right, double w_branch_left, double h_branch_left)
         {
             double[] loc = DoubleJunctionMainRoundEq(which_branch, d_start, d_end, w_branch_right * h_branch_right, w_branch_left * h_branch_left);
             double[] attn = new double[8];
 
-            if (which_branch == Branch.BranchRight)
+            if (which_branch == BranchDirection.BranchRight)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -335,7 +337,7 @@ namespace Compute_Engine
                     }
                 }
             }
-            else if (which_branch == Branch.BranchLeft)
+            else if (which_branch == BranchDirection.BranchLeft)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -363,12 +365,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] DoubleJunctionMainRectangularBranchRound(Branch which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double d_branch_right, double d_branch_left)
+        public static double[] DoubleJunctionMainRectangularBranchRound(BranchDirection which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double d_branch_right, double d_branch_left)
         {
             double[] loc = DoubleJunctionMainRectangularEq(which_branch, w_start * h_start, w_end * h_end, Math.Pow(d_branch_right, 2) * 0.25 * Math.PI, Math.Pow(d_branch_left, 2) * 0.25 * Math.PI, Math.Max(w_start, h_start));
             double[] attn = new double[8];
 
-            if (which_branch == Branch.BranchRight)
+            if (which_branch == BranchDirection.BranchRight)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -389,7 +391,7 @@ namespace Compute_Engine
                     }
                 }
             }
-            else if (which_branch == Branch.BranchLeft)
+            else if (which_branch == BranchDirection.BranchLeft)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -417,12 +419,12 @@ namespace Compute_Engine
             return attn;
         }
 
-        public static double[] DoubleJunctionMainRectangularBranchRectangular(Branch which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double w_branch_right, double h_branch_right, double w_branch_left, double h_branch_left)
+        public static double[] DoubleJunctionMainRectangularBranchRectangular(BranchDirection which_branch, BranchType branchType, double w_start, double h_start, double w_end, double h_end, double w_branch_right, double h_branch_right, double w_branch_left, double h_branch_left)
         {
             double[] loc = DoubleJunctionMainRectangularEq(which_branch, w_start * h_start, w_end * w_end, w_branch_right * h_branch_right, w_branch_left * h_branch_left, Math.Max(w_start, h_start));
             double[] attn = new double[8];
 
-            if (which_branch == Branch.BranchRight)
+            if (which_branch == BranchDirection.BranchRight)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -443,7 +445,7 @@ namespace Compute_Engine
                     }
                 }
             }
-            else if (which_branch == Branch.BranchLeft)
+            else if (which_branch == BranchDirection.BranchLeft)
             {
                 if (branchType == BranchType.Rounded)
                 {
@@ -471,14 +473,13 @@ namespace Compute_Engine
             return attn;
         }
 
-        private static double[] DoubleJunctionMainRoundEq(Branch which_branch, double d_poc, double d_kon, double a_odg1, double a_odg2)
+        private static double[] DoubleJunctionMainRoundEq(BranchDirection which_branch, double d_poc, double d_kon, double a_odg1, double a_odg2)
         {
             //d_kon-średnica netto wylotu z czwórnika, m
             //d_poc-średnica netto wlotu do czwórnika, m
             //a_odg1-powierzchnia netto pierwszego odgałęzienia, m2
             //a_odg2-powierzchnia netto drugiego odgałęzienia, m2
             double a, fco, a_kon, a_poc;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             a_kon = 0.25 * Math.PI * Math.Pow(d_kon, 2);
             a_poc = 0.25 * Math.PI * Math.Pow(d_poc, 2);
@@ -486,9 +487,9 @@ namespace Compute_Engine
 
             for (int i = 0; i < oct.Length; i++)
             {
-                if (which_branch == Branch.BranchRight || which_branch == Branch.BranchLeft)
+                if (which_branch == BranchDirection.BranchRight || which_branch == BranchDirection.BranchLeft)
                 {
-                    if (which_branch == Branch.BranchRight)
+                    if (which_branch == BranchDirection.BranchRight)
                     {
                         a = a_odg1;
                     }
@@ -523,7 +524,7 @@ namespace Compute_Engine
             return attn;
         }
 
-        private static double[] DoubleJunctionMainRectangularEq(Branch which_branch, double a_poc, double a_kon, double a_odg1, double a_odg2, double a_in)
+        private static double[] DoubleJunctionMainRectangularEq(BranchDirection which_branch, double a_poc, double a_kon, double a_odg1, double a_odg2, double a_in)
         {
             //a_kon-powierzchnia netto wylotu z czwórnika, m2
             //a_poc-powierzchnia netto wlotu do czwórnika, m2
@@ -531,15 +532,14 @@ namespace Compute_Engine
             //a_odg2-powierzchnia netto drugiego odgałęzienia, m2
             //a-większy wymiar wlotowego przekroju poprzecznego, m
             double f, fco;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             fco = 1125 / UnitConvertion.MToFt(a_in);
 
             for (int i = 0; i < oct.Length; i++)
             {
-                if (which_branch == Branch.BranchRight || which_branch == Branch.BranchRight)
+                if (which_branch == BranchDirection.BranchRight || which_branch == BranchDirection.BranchLeft)
                 {
-                    if (which_branch == Branch.BranchRight)
+                    if (which_branch == BranchDirection.BranchRight)
                     {
                         f = a_odg1;
                     }
@@ -587,7 +587,6 @@ namespace Compute_Engine
             //liningThickness-grubość wewnętrznej izolacji akustycznej (wata szklana), cm
             double fco, s, m, gl, w1, h1, l1;
             double[] a = new double[8];
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
 
             if (!(liningThickness == 0))
@@ -647,74 +646,6 @@ namespace Compute_Engine
             return attn;
         }
 
-        private static double[] AbsMaterial(LiningType liningType, double t)
-        {
-            double k63, k125, k250, k500, k1000, k2000, k4000, k8000;
-            if (liningType == LiningType.Concrete)
-            {
-                //beton
-                k63 = 0.01;
-                k125 = 0.01;
-                k250 = 0.01;
-                k500 = 0.02;
-                k1000 = 0.02;
-                k2000 = 0.02;
-                k4000 = 0.03;
-                k8000 = 0.04;
-            }
-            else if (liningType == LiningType.Steel)
-            {
-                //blacha stalowa
-                k63 = 0.04;
-                k125 = 0.04;
-                k250 = 0.04;
-                k500 = 0.05;
-                k1000 = 0.05;
-                k2000 = 0.05;
-                k4000 = 0.07;
-                k8000 = 0.09;
-            }
-            else
-            {
-                //wata szklana
-                //grubość od 2,5 do 10 cm
-                k63 = 0.03 * Math.Pow((t / 2.5), 2) + 0.102 * (t / 2.5) - 0.12;
-                k125 = 0.03 * Math.Pow((t / 2.5), 2) + 0.124 * (t / 2.5) - 0.13;
-                if (t < 7.5)
-                {
-                    k250 = -0.21 * Math.Pow((t / 2.5), 2) + 1.23 * (t / 2.5) - 0.8;
-                }
-                else
-                {
-                    k250 = 1;
-                }
-
-                if ((0.31 * (t / 2.5) + 0.38) <= 1)
-                {
-                    k500 = 0.31 * (t / 2.5) + 0.38;
-                }
-                else
-                {
-                    k500 = 1;
-                }
-
-                if ((0.09 * (t / 2.5) + 0.82) <= 1)
-                {
-                    k1000 = 0.09 * (t / 2.5) + 0.82;
-                }
-                else
-                {
-                    k1000 = 1;
-                }
-
-                k2000 = 1;
-                k4000 = 1;
-                k8000 = 1;
-            }
-            double[] val = { k63, k125, k250, k500, k1000, k2000, k4000, k8000 };
-            return val;
-        }
-
         public static double[] PlenumInletRound(double liningThickness, double q, double sout, double d, double ld, double l, double w, double h)
         {
             //sin-powierzchnia otworu wlotowego, m2
@@ -728,7 +659,6 @@ namespace Compute_Engine
             //liningThickness-grubość wewnętrznej izolacji akustycznej (wata szkalana), cm
             double fco, s, sin, m, gl, w1, h1, l1;
             double[] a = new double[8];
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
 
             if (!(liningThickness == 0))
@@ -794,7 +724,6 @@ namespace Compute_Engine
             //a-pole powierzchni przewodu do którego jest przyłączona jest kratka, m2
             double co = 1125.0;
             double a1, d;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             a1 = a * Math.Pow(UnitConvertion.MToFt(1), 2);
             d = Math.Pow((4 * a1 / Math.PI), 0.5);
@@ -818,7 +747,6 @@ namespace Compute_Engine
             //p-pole powierzchni przewodu, m2
             //circuit-obwód kanału, m
             //a-współczynnik pochłaniania dźwięku w danej częstotliwości.
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
 
             for (int i = 0; i < oct.Length; i++)
@@ -840,7 +768,6 @@ namespace Compute_Engine
             //d=m,f=Hz
             //liningThickness-grubość wewnętrznej izolacji akustycznej (wata szklana od 2,5 do 7,5cm), cm
             double d1, r, f;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             d1 = 100 * (d) / 2.54;
             r = 100 * (1.5 * d + 3 * liningThickness / 100) / 2.54;
@@ -890,7 +817,6 @@ namespace Compute_Engine
         {
             //w=szerekość kolana, m
             //w=m,f=Hz
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
 
             for (int i = 0; i < oct.Length; i++)
@@ -919,7 +845,6 @@ namespace Compute_Engine
         {
             //w-szerokość kolana
             //w=m,f=Hz
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
 
             for (int i = 0; i < oct.Length; i++)
@@ -1071,7 +996,6 @@ namespace Compute_Engine
             //d=m, l=m, Oct=Hz
             //liningThickness-grubość wewnętrznej izolacji akustycznej (wata szklana od 2,5 do 7,5cm), cm
             double a, b, c, d2, e, f, d1;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             d1 = 100 * (d) / 2.54;
 
@@ -1272,7 +1196,6 @@ namespace Compute_Engine
             //l-długość kanału, m
             //liningThickness-grubość wewnętrznej izolacji akustycznej (wata szklana od 2,5 do 5cm), cm
             double p, a, b, c, d, p1, a1;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             double[] il = { 0, 0, 0, 0, 0, 0, 0, 0 };
             double[] val = new double[8];
@@ -1363,5 +1286,79 @@ namespace Compute_Engine
             }
             return val;
         }
+
+        #endregion
+
+        #region Methods
+
+        private static double[] AbsMaterial(LiningType liningType, double t)
+        {
+            double k63, k125, k250, k500, k1000, k2000, k4000, k8000;
+            if (liningType == LiningType.Concrete)
+            {
+                //beton
+                k63 = 0.01;
+                k125 = 0.01;
+                k250 = 0.01;
+                k500 = 0.02;
+                k1000 = 0.02;
+                k2000 = 0.02;
+                k4000 = 0.03;
+                k8000 = 0.04;
+            }
+            else if (liningType == LiningType.Steel)
+            {
+                //blacha stalowa
+                k63 = 0.04;
+                k125 = 0.04;
+                k250 = 0.04;
+                k500 = 0.05;
+                k1000 = 0.05;
+                k2000 = 0.05;
+                k4000 = 0.07;
+                k8000 = 0.09;
+            }
+            else
+            {
+                //wata szklana
+                //grubość od 2,5 do 10 cm
+                k63 = 0.03 * Math.Pow((t / 2.5), 2) + 0.102 * (t / 2.5) - 0.12;
+                k125 = 0.03 * Math.Pow((t / 2.5), 2) + 0.124 * (t / 2.5) - 0.13;
+                if (t < 7.5)
+                {
+                    k250 = -0.21 * Math.Pow((t / 2.5), 2) + 1.23 * (t / 2.5) - 0.8;
+                }
+                else
+                {
+                    k250 = 1;
+                }
+
+                if ((0.31 * (t / 2.5) + 0.38) <= 1)
+                {
+                    k500 = 0.31 * (t / 2.5) + 0.38;
+                }
+                else
+                {
+                    k500 = 1;
+                }
+
+                if ((0.09 * (t / 2.5) + 0.82) <= 1)
+                {
+                    k1000 = 0.09 * (t / 2.5) + 0.82;
+                }
+                else
+                {
+                    k1000 = 1;
+                }
+
+                k2000 = 1;
+                k4000 = 1;
+                k8000 = 1;
+            }
+            double[] val = { k63, k125, k250, k500, k1000, k2000, k4000, k8000 };
+            return val;
+        }
+
+        #endregion
     }
 }

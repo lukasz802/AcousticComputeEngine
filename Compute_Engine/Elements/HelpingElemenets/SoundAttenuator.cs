@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Interfaces;
 
 namespace Compute_Engine.Elements
 {
+
     [Serializable]
-    public class RoomConstant : IOctaveBandAbsorption
+    public class SoundAttenuator : ISoundAttenuator
     {
         private double _octaveBand63Hz;
         private double _octaveBand125Hz;
@@ -18,12 +15,10 @@ namespace Compute_Engine.Elements
         private double _octaveBand2000Hz;
         private double _octaveBand4000Hz;
         private double _octaveBand8000Hz;
-        private readonly Room _room = null;
 
-        internal RoomConstant(Room room, double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
+        public SoundAttenuator(double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
             double octaveBand1000Hz, double octaveBand2000Hz, double octaveBand4000Hz, double octaveBand8000Hz)
         {
-            _room = room;
             _octaveBand63Hz = octaveBand63Hz;
             _octaveBand125Hz = octaveBand125Hz;
             _octaveBand250Hz = octaveBand250Hz;
@@ -34,24 +29,16 @@ namespace Compute_Engine.Elements
             _octaveBand8000Hz = octaveBand8000Hz;
         }
 
-        internal double[] MaxAbsorption(Room room)
+        public double TotalAttenution()
         {
-            double s, mfp;
-            double[] m = new double[8];
+            double result;
+            result = MathOperation.OctaveSum(_octaveBand63Hz, _octaveBand125Hz, _octaveBand250Hz, _octaveBand500Hz, _octaveBand1000Hz, _octaveBand2000Hz,
+                _octaveBand4000Hz, OctaveBand8k);
 
-            s = 2 * (UnitConvertion.MToFt(room.Width) * UnitConvertion.MToFt(room.Lenght)) + 2 * (UnitConvertion.MToFt(room.Lenght) * UnitConvertion.MToFt(room.Height))
-                + 2 * (UnitConvertion.MToFt(room.Width) * UnitConvertion.MToFt(room.Height));
-            mfp = 4 * (UnitConvertion.MToFt(room.Width) * UnitConvertion.MToFt(room.Height) * UnitConvertion.MToFt(room.Lenght)) / s;
-
-            for (int i = 0; i < m.Length; i++)
-            {
-                m[i] = Transmission.M_coeff(room.Temperature, room.RelativeHumidity)[i] / UnitConvertion.MToFt(1) * mfp;
-            }
-
-            return m;
+            return result;
         }
 
-        public double OctaveBand63Hz
+        public double OctaveBand63
         {
             get { return _octaveBand63Hz; }
             set
@@ -60,18 +47,18 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand63Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[0], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand63Hz = Math.Round(value, 2);
+                    _octaveBand63Hz = value;
                 }
                 else
                 {
-                    _octaveBand63Hz = 0.99 - Math.Round(MaxAbsorption(_room)[0], 2);
+                    _octaveBand63Hz = 99;
                 }
             }
         }
 
-        public double OctaveBand125Hz
+        public double OctaveBand125
         {
             get { return _octaveBand125Hz; }
             set
@@ -80,18 +67,18 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand125Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[1], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand125Hz = Math.Round(value, 2);
+                    _octaveBand125Hz = value;
                 }
                 else
                 {
-                    _octaveBand125Hz = 0.99 - Math.Round(MaxAbsorption(_room)[1], 2);
+                    _octaveBand125Hz = 99;
                 }
             }
         }
 
-        public double OctaveBand250Hz
+        public double OctaveBand250
         {
             get { return _octaveBand250Hz; }
             set
@@ -100,18 +87,18 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand250Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[2], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand250Hz = Math.Round(value, 2);
+                    _octaveBand250Hz = value;
                 }
                 else
                 {
-                    _octaveBand250Hz = 0.99 - Math.Round(MaxAbsorption(_room)[2], 2);
+                    _octaveBand250Hz = 99;
                 }
             }
         }
 
-        public double OctaveBand500Hz
+        public double OctaveBand500
         {
             get { return _octaveBand500Hz; }
             set
@@ -120,18 +107,18 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand500Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[3], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand500Hz = Math.Round(value, 2);
+                    _octaveBand500Hz = value;
                 }
                 else
                 {
-                    _octaveBand500Hz = 0.99 - Math.Round(MaxAbsorption(_room)[3], 2);
+                    _octaveBand500Hz = 99;
                 }
             }
         }
 
-        public double OctaveBand1000Hz
+        public double OctaveBand1k
         {
             get { return _octaveBand1000Hz; }
             set
@@ -140,18 +127,18 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand1000Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[4], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand1000Hz = Math.Round(value, 2);
+                    _octaveBand1000Hz = value;
                 }
                 else
                 {
-                    _octaveBand1000Hz = 0.99 - Math.Round(MaxAbsorption(_room)[4], 2);
+                    _octaveBand1000Hz = 99;
                 }
             }
         }
 
-        public double OctaveBand2000Hz
+        public double OctaveBand2k
         {
             get { return _octaveBand2000Hz; }
             set
@@ -160,18 +147,18 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand2000Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[5], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand2000Hz = Math.Round(value, 2);
+                    _octaveBand2000Hz = value;
                 }
                 else
                 {
-                    _octaveBand2000Hz = 0.99 - Math.Round(MaxAbsorption(_room)[5], 2);
+                    _octaveBand2000Hz = 99;
                 }
             }
         }
 
-        public double OctaveBand4000Hz
+        public double OctaveBand4k
         {
             get { return _octaveBand4000Hz; }
             set
@@ -180,18 +167,18 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand4000Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[6], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand4000Hz = Math.Round(value, 2);
+                    _octaveBand4000Hz = value;
                 }
                 else
                 {
-                    _octaveBand4000Hz = 0.99 - Math.Round(MaxAbsorption(_room)[6], 2);
+                    _octaveBand4000Hz = 99;
                 }
             }
         }
 
-        public double OctaveBand8000Hz
+        public double OctaveBand8k
         {
             get { return _octaveBand8000Hz; }
             set
@@ -200,13 +187,13 @@ namespace Compute_Engine.Elements
                 {
                     _octaveBand8000Hz = 0;
                 }
-                else if (value < (0.99 - Math.Round(MaxAbsorption(_room)[7], 2)))
+                else if (value < 99)
                 {
-                    _octaveBand8000Hz = Math.Round(value, 2);
+                    _octaveBand8000Hz = value;
                 }
                 else
                 {
-                    _octaveBand8000Hz = 0.99 - Math.Round(MaxAbsorption(_room)[7], 2);
+                    _octaveBand8000Hz = 99;
                 }
             }
         }

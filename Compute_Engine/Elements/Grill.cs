@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Compute_Engine.Factories;
+using System;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
 using Function = Compute_Engine;
@@ -20,7 +17,7 @@ namespace Compute_Engine.Elements
         private int _eff_area;
         private GrillType _grill_type;
         private GrillLocation _grill_location;
-        private GrillOrifice _local = null;
+        private IGrillOrifice _local;
 
         /// <summary>Kratka wentylacyjna nawiewna/wyciągowa.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -50,7 +47,7 @@ namespace Compute_Engine.Elements
             _height = height;
             _diameter = diameter;
             _eff_area = percEffectiveArea;
-            _local = new GrillOrifice(orificeHeight, orificeDepth);
+            _local = EquipElementsFactory.GetGrillOrifice(orificeHeight, orificeDepth);
             _counter = 1;
         }
 
@@ -69,7 +66,7 @@ namespace Compute_Engine.Elements
             _height = 150;
             _diameter = 200;
             _eff_area = 70;
-            _local = new GrillOrifice(20, 20);
+            _local = EquipElementsFactory.GetGrillOrifice(20, 20);
         }
 
         /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
@@ -268,7 +265,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public GrillOrifice Orifice
+        public IGrillOrifice Orifice
         {
             get
             {

@@ -1,13 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Compute_Engine
 {
     public static class Breakout
     {
+        #region Fields and constants
+
+        static private readonly double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
+
+        #endregion
+
+        #region Public methods
+
         public static double[] DuctRectangular(double w, double h, double l, double q)
         {
             //w-szerokość kanału, m
@@ -15,7 +19,6 @@ namespace Compute_Engine
             //l-długość kanału, m
             //q-gęstość powierzchniowa materiału z którego wykonano kanał, kg/m2
             double a, ao, fl, tlmin, q1, tl1, tl2;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             q1 = UnitConvertion.KgTolb(q) / (UnitConvertion.MToFt(1) * UnitConvertion.MToFt(1));
             a = (100 * h / 2.54) * (100 * w / 2.54);
@@ -75,7 +78,6 @@ namespace Compute_Engine
             //l-długość kanału, m
             //q-gęstość powierzchniowa materiału z którego wykonano kanał, kg/m2
             double a, ao, tlout, q1, tl1, tl2;
-            double[] oct = { 63, 125, 250, 500, 1000, 2000, 4000, 8000 };
             double[] attn = new double[8];
             q1 = UnitConvertion.KgTolb(q) / (UnitConvertion.MToFt(1) * UnitConvertion.MToFt(1));
             a = Math.PI * Math.Pow((100 * d / 2.54), 2) * 0.25;
@@ -106,5 +108,7 @@ namespace Compute_Engine
             }
             return attn;
         }
+
+        #endregion
     }
 }

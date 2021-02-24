@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Compute_Engine.Factories;
+using System;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
 using Function = Compute_Engine;
@@ -10,13 +7,16 @@ using Function = Compute_Engine;
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public class TJunction : ElementsBase, IDoubleBranchingElement<TJunctionBranch>
+    public class TJunction : ElementsBase, IDuctConnection, IDoubleBranchingElement<IBranch>
     {
         private static int _counter = 1;
         private static string _name = "tjnt_";
-        private readonly TJunctionBranch _local_right = null;
-        private readonly TJunctionBranch _local_left = null;
-        private TJunctionContaier _container = null;
+        private int _width;
+        private int _height;
+        private int _diameter;
+        private DuctType _ductType;
+        private readonly IBranch _local_right;
+        private readonly IBranch _local_left;
 
         /// <summary>Trójnik typu T.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -40,25 +40,45 @@ namespace Compute_Engine.Elements
         /// <param name="roundingLeft">Promień zaokrąglenia odgałęzienia lewego [mm].</param>
         /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
         /// <returns></returns>
-        public TJunction(string name, string comments, DuctType ductTypeMainIn, int widthMainIn, int heightMainIn,
-            int diameterMainIn, DuctType ductTypeBranch, BranchType branchTypeRight, int airFlowBranchRight,
-            int widthBranchRight, int heightBranchRight, int diameterBranchRight, int roundingRight, BranchType branchTypeLeft,
-            int airFlowBranchLeft, int widthBranchLeft, int heightBranchLeft, int diameterBranchLeft, int roundingLeft, bool include)
+        public TJunction(string name, string comments, DuctType ductTypeMainIn, int widthMainIn, int heightMainIn, int diameterMainIn,
+            DuctType ductTypeBranch, BranchType branchTypeRight, int airFlowBranchRight, int widthBranchRight, int heightBranchRight,
+            int diameterBranchRight, int roundingRight, BranchType branchTypeLeft, int airFlowBranchLeft, int widthBranchLeft,
+            int heightBranchLeft, int diameterBranchLeft, int roundingLeft, bool include)
         {
+
+            if (airFlowBranchRight < 0)
+            {
+                airFlowBranchRight = 0;
+            }
+
+            if (airFlowBranchLeft < 0)
+            {
+                airFlowBranchLeft = 0;
+            }
+
             _type = ElementType.TJunction;
+            this.DuctType = ductTypeMainIn;
+            this.Width = widthMainIn;
+            this.Height = heightMainIn;
+            this.Diameter = diameterMainIn;
             this.Comments = comments;
             this.Name = name;
-            base.AirFlow = airFlowBranchLeft + airFlowBranchRight;
+            base.AirFlow = airFlowBranchRight + airFlowBranchLeft;
             this.IsIncluded = include;
             _name = this.Name;
             _counter = 1;
 
-            _container = new TJunctionContaier(this, ductTypeMainIn, widthMainIn, heightMainIn, diameterMainIn, ductTypeBranch,
-                branchTypeRight, airFlowBranchRight, widthBranchRight, heightBranchRight, diameterBranchRight,
-                roundingRight, branchTypeLeft, airFlowBranchLeft, widthBranchLeft, heightBranchLeft, diameterBranchLeft,
-                roundingLeft);
-            _local_right = new TJunctionBranch(_container, Branch.BranchRight);
-            _local_left = new TJunctionBranch(_container, Branch.BranchLeft);
+            _local_right = BranchingElementsFactory.GetTJunctionBranch(this, _local_left, BranchDirection.BranchRight,
+                ductTypeBranch, branchTypeRight, airFlowBranchRight, widthBranchRight, heightBranchRight, diameterBranchRight, roundingRight);
+            _local_left = BranchingElementsFactory.GetTJunctionBranch(this, _local_right, BranchDirection.BranchLeft,
+                ductTypeBranch, branchTypeLeft, airFlowBranchLeft, widthBranchLeft, heightBranchLeft, diameterBranchLeft, roundingLeft);
+            _local_right = BranchingElementsFactory.GetTJunctionBranch(this, _local_left, BranchDirection.BranchRight,
+                ductTypeBranch, branchTypeRight, airFlowBranchRight, widthBranchRight, heightBranchRight, diameterBranchRight, roundingRight);
+            this.AirFlowChanged += UpdateInletAirFlow;
+            _local_right.AirFlowChanged += UpdateRightBranchAirFlow;
+            _local_left.AirFlowChanged += UpdateLeftBranchAirFlow;
+            _local_right.DuctTypeChanged += UpdateBranchRightDuctType;
+            _local_left.DuctTypeChanged += UpdateBranchLeftDuctType;
             this.BranchRight.Elements._parent = this;
             this.BranchLeft.Elements._parent = this;
         }
@@ -68,21 +88,32 @@ namespace Compute_Engine.Elements
         public TJunction()
         {
             _type = ElementType.TJunction;
+            this.DuctType = DuctType.Rectangular;
+            this.Width = 400;
+            this.Height = 200;
+            this.Diameter = 315;
             this.Comments = "";
             this.Name = (_name + _counter).ToString();
             _counter++;
+            base.AirFlow = 1200;
             this.IsIncluded = true;
 
-            _container = new TJunctionContaier(this, DuctType.Rectangular, 400, 200, 450, DuctType.Rectangular,
-                BranchType.Straight, 600, 160, 160, 200, 0, BranchType.Straight, 800, 160, 160, 200, 0);
-            _local_right = new TJunctionBranch(_container, Branch.BranchRight);
-            _local_left = new TJunctionBranch(_container, Branch.BranchLeft);
-            base.AirFlow = 1400;
+            _local_right = BranchingElementsFactory.GetTJunctionBranch(this, _local_left, BranchDirection.BranchLeft,
+                DuctType.Rectangular, BranchType.Straight, 600, 160, 160, 200, 0);
+            _local_left = BranchingElementsFactory.GetTJunctionBranch(this, _local_right, BranchDirection.BranchRight,
+                DuctType.Rectangular, BranchType.Straight, 600, 160, 160, 200, 0);
+            _local_right = BranchingElementsFactory.GetTJunctionBranch(this, _local_left, BranchDirection.BranchLeft,
+                DuctType.Rectangular, BranchType.Straight, 600, 160, 160, 200, 0);
+            this.AirFlowChanged += UpdateInletAirFlow;
+            _local_right.AirFlowChanged += UpdateRightBranchAirFlow;
+            _local_left.AirFlowChanged += UpdateLeftBranchAirFlow;
+            _local_right.DuctTypeChanged += UpdateBranchRightDuctType;
+            _local_left.DuctTypeChanged += UpdateBranchLeftDuctType;
             this.BranchRight.Elements._parent = this;
             this.BranchLeft.Elements._parent = this;
         }
 
-        public TJunctionBranch BranchRight
+        public IBranch BranchRight
         {
             get
             {
@@ -90,7 +121,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public TJunctionBranch BranchLeft
+        public IBranch BranchLeft
         {
             get
             {
@@ -98,34 +129,27 @@ namespace Compute_Engine.Elements
             }
         }
 
-        internal TJunctionContaier Container
-        {
-            get
-            {
-                return _container;
-            }
-        }
-
         public int Width
         {
             get
             {
-                return _container.WidthMain;
+                return _width;
             }
             set
             {
                 if (value < 100)
                 {
-                    _container.WidthMain = 100;
+                    _width = 100;
                 }
                 else if (value < 2000)
                 {
-                    _container.WidthMain = value;
+                    _width = value;
                 }
                 else
                 {
-                    _container.WidthMain = 2000;
+                    _width = 2000;
                 }
+                OnDimensionsChanged();
             }
         }
 
@@ -133,22 +157,23 @@ namespace Compute_Engine.Elements
         {
             get
             {
-                return _container.HeightMain;
+                return _height;
             }
             set
             {
                 if (value < 100)
                 {
-                    _container.HeightMain = 100;
+                    _height = 100;
                 }
                 else if (value < 2000)
                 {
-                    _container.HeightMain = value;
+                    _height = value;
                 }
                 else
                 {
-                    _container.HeightMain = 2000;
+                    _height = 2000;
                 }
+                OnDimensionsChanged();
             }
         }
 
@@ -156,22 +181,23 @@ namespace Compute_Engine.Elements
         {
             get
             {
-                return _container.DiameterMain;
+                return _diameter;
             }
             set
             {
                 if (value < 80)
                 {
-                    _container.DiameterMain = 80;
+                    _diameter = 80;
                 }
                 else if (value < 1600)
                 {
-                    _container.DiameterMain = value;
+                    _diameter = value;
                 }
                 else
                 {
-                    _container.DiameterMain = 1600;
+                    _diameter = 1600;
                 }
+                OnDimensionsChanged();
             }
         }
 
@@ -183,10 +209,15 @@ namespace Compute_Engine.Elements
             }
             set
             {
-                base.AirFlow = value;
-                double temp = Convert.ToDouble(_container.AirFlowBranchRight) / Convert.ToDouble(_container.AirFlowBranchRight + _container.AirFlowBranchLeft);
-                _container.AirFlowBranchRight = (int)Math.Round(temp * value);
-                _container.AirFlowBranchLeft = (int)Math.Round((1 - temp) * value);
+                if (value < 1)
+                {
+                    base.AirFlow = 1;
+                }
+                else
+                {
+                    base.AirFlow = value;
+                }
+                OnAirFlowChanged();
             }
         }
 
@@ -194,13 +225,13 @@ namespace Compute_Engine.Elements
         {
             get
             {
-                if (_container.DuctTypeMain == DuctType.Rectangular)
+                if (DuctType == DuctType.Rectangular)
                 {
-                    return (this.AirFlow / 3600.0) / ((_container.WidthMain / 1000.0) * (_container.HeightMain / 1000.0));
+                    return (AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0));
                 }
                 else
                 {
-                    return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_container.DiameterMain / 1000.0, 2));
+                    return (AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
                 }
             }
         }
@@ -209,11 +240,12 @@ namespace Compute_Engine.Elements
         {
             get
             {
-                return _container.DuctTypeMain;
+                return _ductType;
             }
             set
             {
-                _container.DuctTypeMain = value;
+                _ductType = value;
+                OnDuctTypeChanged();
             }
         }
 
@@ -229,73 +261,156 @@ namespace Compute_Engine.Elements
         {
             double[] lw = new double[8];
 
-            if (_container.DuctTypeMain == DuctType.Rectangular && _container.DuctTypeBranch == DuctType.Rectangular)
+            if (this.DuctType == DuctType.Rectangular && BranchRight.DuctType == DuctType.Rectangular)
             {
-                if (_container.BranchTypeRight == BranchType.Rounded)
+                if (BranchRight.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                        _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0, _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0,
-                        _container.WidthMain / 1000.0 * _container.HeightMain / 1000.0, _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                        BranchRight.Width / 1000.0 * BranchRight.Height / 1000.0, BranchLeft.Width / 1000.0 * BranchLeft.Height / 1000.0,
+                        this.Width / 1000.0 * this.Height / 1000.0, BranchRight.Rounding / 1000.0, BranchLeft.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                        _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0, _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0,
-                        _container.WidthMain / 1000.0 * _container.HeightMain / 1000.0, _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                        BranchRight.Width / 1000.0 * BranchRight.Height / 1000.0, BranchLeft.Width / 1000.0 * BranchLeft.Height / 1000.0,
+                        this.Width / 1000.0 * this.Height / 1000.0, BranchRight.Rounding / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (_container.DuctTypeMain == DuctType.Round && _container.DuctTypeBranch == DuctType.Rectangular)
+            else if (this.DuctType == DuctType.Round && BranchRight.DuctType == DuctType.Rectangular)
             {
-                if (_container.BranchTypeRight == BranchType.Rounded)
+                if (BranchRight.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                        _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0,
-                        _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0, Math.PI * 0.25 * Math.Pow(_container.DiameterMain / 1000.0, 2),
-                        _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                        BranchRight.Width / 1000.0 * BranchRight.Height / 1000.0,
+                        BranchLeft.Width / 1000.0 * BranchLeft.Height / 1000.0, Math.PI * 0.25 * Math.Pow(this.Diameter / 1000.0, 2),
+                        BranchRight.Rounding / 1000.0, BranchLeft.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                        _container.WidthBranchRight / 1000.0 * _container.HeightBranchRight / 1000.0,
-                        _container.WidthBranchLeft / 1000.0 * _container.HeightBranchLeft / 1000.0, Math.PI * 0.25 * Math.Pow(_container.DiameterMain / 1000.0, 2),
-                        _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                        BranchRight.Width / 1000.0 * BranchRight.Height / 1000.0,
+                        BranchLeft.Width / 1000.0 * BranchLeft.Height / 1000.0, Math.PI * 0.25 * Math.Pow(this.Diameter / 1000.0, 2),
+                        BranchRight.Rounding / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (_container.DuctTypeMain == DuctType.Round && _container.DuctTypeBranch == DuctType.Round)
+            else if (this.DuctType == DuctType.Round && BranchRight.DuctType == DuctType.Round)
             {
-                if (_container.BranchTypeRight == BranchType.Rounded)
+                if (BranchRight.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), Math.PI * 0.25 * Math.Pow(_container.DiameterMain / 1000.0, 2),
-                        _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                         Math.PI * 0.25 * Math.Pow(BranchRight.Diameter / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(BranchLeft.Diameter / 1000.0, 2), Math.PI * 0.25 * Math.Pow(this.Diameter / 1000.0, 2),
+                        BranchRight.Rounding / 1000.0, BranchLeft.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), Math.PI * 0.25 * Math.Pow(_container.DiameterMain / 1000.0, 2),
-                        _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                         Math.PI * 0.25 * Math.Pow(BranchRight.Diameter / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(BranchLeft.Diameter  / 1000.0, 2), Math.PI * 0.25 * Math.Pow(this.Diameter / 1000.0, 2),
+                        BranchRight.Rounding / 1000.0, 0, Turbulence.No);
                 }
             }
             else
             {
-                if (_container.BranchTypeRight == BranchType.Rounded)
+                if (BranchRight.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), _container.WidthMain / 1000.0 * _container.HeightMain / 1000.0,
-                        _container.RoundingBranchRight / 1000.0, _container.RoundingBranchLeft / 1000.0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                         Math.PI * 0.25 * Math.Pow(BranchRight.Diameter / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(BranchLeft.Diameter / 1000.0, 2), this.Width / 1000.0 *this.Height / 1000.0,
+                        BranchRight.Rounding / 1000.0, BranchLeft.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.TJunction(Branch.Main, _container.AirFlowBranchRight, _container.AirFlowBranchLeft,
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchRight / 1000.0, 2),
-                         Math.PI * 0.25 * Math.Pow(_container.DiameterBranchLeft / 1000.0, 2), _container.WidthMain / 1000.0 * _container.HeightMain / 1000.0,
-                        _container.RoundingBranchRight / 1000.0, 0, Turbulence.No);
+                    lw = Function.Noise.TJunction(BranchDirection.Main, BranchRight.AirFlow, BranchLeft.AirFlow,
+                         Math.PI * 0.25 * Math.Pow(BranchRight.Diameter / 1000.0, 2),
+                         Math.PI * 0.25 * Math.Pow(BranchLeft.Diameter / 1000.0, 2), this.Width / 1000.0 *this.Height / 1000.0,
+                        BranchRight.Rounding / 1000.0, 0, Turbulence.No);
                 }
             }
             return lw;
+        }
+
+        private void UpdateBranchRightDuctType(object sender, EventArgs e)
+        {
+            BranchLeft.DuctTypeChanged -= UpdateBranchLeftDuctType;
+            BranchLeft.DuctType = BranchRight.DuctType;
+            BranchLeft.DuctTypeChanged += UpdateBranchLeftDuctType;
+        }
+
+        private void UpdateBranchLeftDuctType(object sender, EventArgs e)
+        {
+            BranchRight.DuctTypeChanged -= UpdateBranchRightDuctType;
+            BranchRight.DuctType = BranchLeft.DuctType;
+            BranchRight.DuctTypeChanged += UpdateBranchRightDuctType;
+        }
+
+        private void UpdateInletAirFlow(object sender, EventArgs e)
+        {
+            _local_left.AirFlowChanged -= UpdateLeftBranchAirFlow;
+            _local_right.AirFlowChanged -= UpdateRightBranchAirFlow;
+
+            var n = (double)BranchRight.AirFlow / (BranchRight.AirFlow + BranchLeft.AirFlow);
+
+            BranchRight.AirFlow = (int)Math.Ceiling(base.AirFlow * n);
+            BranchLeft.AirFlow = base.AirFlow - BranchRight.AirFlow;
+
+            _local_left.AirFlowChanged += UpdateLeftBranchAirFlow;
+            _local_right.AirFlowChanged += UpdateRightBranchAirFlow;
+        }
+
+        private void UpdateRightBranchAirFlow(object sender, EventArgs e)
+        {
+            _local_left.AirFlowChanged -= UpdateLeftBranchAirFlow;
+
+            if (BranchRight.AirFlow <= base.AirFlow)
+            {
+                BranchLeft.AirFlow = base.AirFlow - BranchRight.AirFlow;
+            }
+            else
+            {
+                BranchRight.AirFlow = base.AirFlow;
+                BranchLeft.AirFlow = 0;
+            }
+
+            _local_left.AirFlowChanged += UpdateLeftBranchAirFlow;
+        }
+
+        private void UpdateLeftBranchAirFlow(object sender, EventArgs e)
+        {
+            _local_right.AirFlowChanged -= UpdateRightBranchAirFlow;
+
+            if (BranchLeft.AirFlow <= base.AirFlow)
+            {
+                BranchRight.AirFlow = base.AirFlow - BranchLeft.AirFlow;
+            }
+            else
+            {
+                BranchLeft.AirFlow = base.AirFlow;
+                BranchRight.AirFlow = 0;
+            }
+
+            _local_right.AirFlowChanged += UpdateRightBranchAirFlow;
+        }
+
+        public event EventHandler DimensionsChanged;
+
+        public event EventHandler AirFlowChanged;
+
+        public event EventHandler DuctTypeChanged;
+
+        private void OnDimensionsChanged()
+        {
+            DimensionsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnAirFlowChanged()
+        {
+            AirFlowChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnDuctTypeChanged()
+        {
+            DuctTypeChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

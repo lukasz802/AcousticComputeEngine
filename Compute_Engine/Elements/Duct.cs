@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
 using Function = Compute_Engine;
@@ -18,7 +14,7 @@ namespace Compute_Engine.Elements
         private int _height;
         private int _diameter;
         private double _lenght;
-        private readonly int _liner_thickness;
+        private int _liner_thickness;
         private bool _liner_check;
         private DuctType _duct_type;
 
@@ -97,6 +93,7 @@ namespace Compute_Engine.Elements
                     attn = Function.Attenuation.DuctRound(0, _diameter / 1000, _lenght);
                 }
             }
+
             return attn;
         }
 
@@ -113,6 +110,7 @@ namespace Compute_Engine.Elements
             {
                 lw = Function.Noise.Duct(this.AirFlow, Math.Pow(_diameter / 1000.0, 2) * 0.25 * Math.PI);
             }
+
             return lw;
         }
 
@@ -135,6 +133,11 @@ namespace Compute_Engine.Elements
                 else
                 {
                     _width = 2000;
+                }
+
+                if (this.Width != value)
+                {
+                    UpdateVelocity();
                 }
             }
         }
@@ -159,6 +162,11 @@ namespace Compute_Engine.Elements
                 {
                     _height = 2000;
                 }
+
+                if (this.Height != value)
+                {
+                    UpdateVelocity();
+                }
             }
         }
 
@@ -182,6 +190,11 @@ namespace Compute_Engine.Elements
                 {
                     _diameter = 1600;
                 }
+
+                if (this.Diameter != value)
+                {
+                    UpdateVelocity();
+                }
             }
         }
 
@@ -191,12 +204,25 @@ namespace Compute_Engine.Elements
             {
                 if (_duct_type == DuctType.Rectangular)
                 {
-                    return (this.AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0));
+                    return Math.Round((this.AirFlow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0)), 2);
                 }
                 else
                 {
-                    return (this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2));
+                    return Math.Round((this.AirFlow / 3600.0) / (0.25 * Math.PI * Math.Pow(_diameter / 1000.0, 2)), 2);
                 }
+            }
+        }
+
+        public override int AirFlow
+        {
+            get
+            {
+                return base.AirFlow;
+            }
+            set
+            {
+                base.AirFlow = value;
+                UpdateVelocity();
             }
         }
 
@@ -231,30 +257,30 @@ namespace Compute_Engine.Elements
                 {
                     if (value < 25)
                     {
-                        _width = 25;
+                        _liner_thickness = 25;
                     }
                     else if (value < 75)
                     {
-                        _width = value;
+                        _liner_thickness = value;
                     }
                     else
                     {
-                        _width = 75;
+                        _liner_thickness = 75;
                     }
                 }
                 else
                 {
                     if (value < 25)
                     {
-                        _width = 25;
+                        _liner_thickness = 25;
                     }
                     else if (value < 50)
                     {
-                        _width = value;
+                        _liner_thickness = value;
                     }
                     else
                     {
-                        _width = 50;
+                        _liner_thickness = 50;
                     }
                 }
             }
@@ -285,8 +311,18 @@ namespace Compute_Engine.Elements
                     this.LinerDepth = 50;
                 }
 
+                if (this.DuctType != value)
+                {
+                    UpdateVelocity();
+                }
+
                 _duct_type = value;
             }
+        }
+
+        private void UpdateVelocity()
+        {
+            OnPropertyChanged("Velocity");
         }
     }
 }

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Compute_Engine
 {
+
+    #region Public methods
+
     public static class UnitConvertion
     {
         public static double CMHToCFM(double x)
@@ -32,4 +30,7 @@ namespace Compute_Engine
             return x / 0.45359237;
         }
     }
+
+    #endregion
+
 }

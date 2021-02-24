@@ -1,23 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
 
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public abstract class ElementsBase : ICloneable
+    public abstract class ElementsBase : ICloneable, INotifyPropertyChanged
     {
-        public ElementsBase Parent { get; internal set; }
         protected ElementType _type;
         private int _airflow;
         private string _name;
         private string _comments;
         private bool _include;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public abstract double[] Attenuation();
 
@@ -33,6 +31,8 @@ namespace Compute_Engine.Elements
                 return bf.Deserialize(stream);
             }
         }
+
+        public ElementsBase Parent { get; internal set; }
 
         public string Comments
         {
@@ -95,6 +95,11 @@ namespace Compute_Engine.Elements
             {
                 return _type;
             }
+        }
+
+        public void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

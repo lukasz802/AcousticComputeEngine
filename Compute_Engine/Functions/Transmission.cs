@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
 
 namespace Compute_Engine
 {
     public static class Transmission
     {
+
+        #region Public methods
+
         public static double[] Ceiling(CeiligType ceiligType, CeilingConfiguration ceilingConfiguration)
         {
             double k63, k125, k250, k500, k1000, k2000, k4000, k8000;
@@ -279,4 +278,6 @@ namespace Compute_Engine
             return kw;
         }
     }
+
+    #endregion
 }

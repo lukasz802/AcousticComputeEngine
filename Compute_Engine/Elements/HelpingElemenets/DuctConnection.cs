@@ -1,26 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
-using Function = Compute_Engine;
 
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public class DuctConnection : IRectangular, IRound, IVelocity
+    public class DuctConnection : IDuctConnection
     {
-        private DuctType _duct_type;
         private int _width;
         private int _height;
         private int _diameter;
         private int _airflow;
+        private DuctType _ductType;
 
-        internal DuctConnection(DuctType ductType, int airFlow, int w, int h, int d)
+        public DuctConnection(DuctType ductType, int airFlow, int w, int h, int d)
         {
-            _duct_type = ductType;
+            DuctType = ductType;
             _airflow = airFlow;
             _width = w;
             _height = h;
@@ -103,7 +98,7 @@ namespace Compute_Engine.Elements
         {
             get
             {
-                if (_duct_type == DuctType.Rectangular)
+                if (DuctType == DuctType.Rectangular)
                 {
                     return (_airflow / 3600.0) / ((_width / 1000.0) * (_height / 1000.0));
                 }
@@ -118,15 +113,16 @@ namespace Compute_Engine.Elements
         {
             get
             {
-                return _duct_type;
+                return _ductType;
             }
             set
             {
-                _duct_type = value;
+                _ductType = value;
+                OnDuctTypeChanged();
             }
         }
 
-        internal int AirFlow
+        public int AirFlow
         {
             get
             {
@@ -134,22 +130,37 @@ namespace Compute_Engine.Elements
             }
             set
             {
-                if (value < 1)
+                if (value < 0)
                 {
-                    _airflow = 1;
+                    _airflow = 0;
                 }
                 else
                 {
                     _airflow = value;
                 }
+                OnAirFlowChanged();
             }
         }
 
-        internal event EventHandler DimensionsChanged;
+        public event EventHandler DimensionsChanged;
 
-        protected void OnDimensionsChanged()
+        public event EventHandler AirFlowChanged;
+
+        public event EventHandler DuctTypeChanged;
+
+        private void OnDimensionsChanged()
         {
             DimensionsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnAirFlowChanged()
+        {
+            AirFlowChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnDuctTypeChanged()
+        {
+            DuctTypeChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

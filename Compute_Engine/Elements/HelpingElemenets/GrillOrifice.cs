@@ -1,16 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static Compute_Engine.Interfaces;
 
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public class GrillOrifice
+    public class GrillOrifice : IGrillOrifice
     {
         private int _height;
         private int _depth;
+
+        public GrillOrifice(int height, int depth)
+        {
+            this.Height = height;
+            this.Depth = depth;
+        }
 
         public int Height
         {
@@ -56,12 +59,6 @@ namespace Compute_Engine.Elements
                     _depth = 99;
                 }
             }
-        }
-
-        internal GrillOrifice(int height, int depth)
-        {
-            this.Height = height;
-            this.Depth = depth;
         }
     }
 }

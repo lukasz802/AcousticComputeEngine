@@ -101,19 +101,19 @@ namespace Compute_Engine
                     {
                         if (list[i] is Junction)
                         {
-                            loc_result = MathOperation.OctaveSubstract(loc_result, ((Junction)list[i]).Branch.Attenuation());
+                            loc_result = MathOperation.OctaveMinus(loc_result, ((Junction)list[i]).Branch.Attenuation());
                             loc_result = MathOperation.OctaveDecibelAdd(loc_result, ((Junction)list[i]).Branch.Noise());
                         }
                         else if (list[i] is DoubleJunction)
                         {
                             if (((DoubleJunction)list[i]).BranchRight.Elements.Contains(list[i - 1]))
                             {
-                                loc_result = MathOperation.OctaveSubstract(loc_result, ((DoubleJunction)list[i]).BranchRight.Attenuation());
+                                loc_result = MathOperation.OctaveMinus(loc_result, ((DoubleJunction)list[i]).BranchRight.Attenuation());
                                 loc_result = MathOperation.OctaveDecibelAdd(loc_result, ((DoubleJunction)list[i]).BranchRight.Noise());
                             }
                             else
                             {
-                                loc_result = MathOperation.OctaveSubstract(loc_result, ((DoubleJunction)list[i]).BranchLeft.Attenuation());
+                                loc_result = MathOperation.OctaveMinus(loc_result, ((DoubleJunction)list[i]).BranchLeft.Attenuation());
                                 loc_result = MathOperation.OctaveDecibelAdd(loc_result, ((DoubleJunction)list[i]).BranchLeft.Noise());
                             }
                         }
@@ -121,24 +121,24 @@ namespace Compute_Engine
                         {
                             if (((TJunction)list[i]).BranchRight.Elements.Contains(list[i - 1]))
                             {
-                                loc_result = MathOperation.OctaveSubstract(loc_result, ((TJunction)list[i]).BranchRight.Attenuation());
+                                loc_result = MathOperation.OctaveMinus(loc_result, ((TJunction)list[i]).BranchRight.Attenuation());
                                 loc_result = MathOperation.OctaveDecibelAdd(loc_result, ((TJunction)list[i]).BranchRight.Noise());
                             }
                             else
                             {
-                                loc_result = MathOperation.OctaveSubstract(loc_result, ((TJunction)list[i]).BranchLeft.Attenuation());
+                                loc_result = MathOperation.OctaveMinus(loc_result, ((TJunction)list[i]).BranchLeft.Attenuation());
                                 loc_result = MathOperation.OctaveDecibelAdd(loc_result, ((TJunction)list[i]).BranchLeft.Noise());
                             }
                         }
                     }
                     else
                     {
-                        loc_result = MathOperation.OctaveSubstract(loc_result, list[i].Attenuation());
+                        loc_result = MathOperation.OctaveMinus(loc_result, list[i].Attenuation());
                         loc_result = MathOperation.OctaveDecibelAdd(loc_result, list[i].Noise());
                     }
                 }
 
-                loc_result = MathOperation.OctaveSubstract(loc_result, list[0].Attenuation());
+                loc_result = MathOperation.OctaveMinus(loc_result, list[0].Attenuation());
                 loc_result = MathOperation.OctaveDecibelAdd(loc_result, list[0].Noise());
                 overall_result.Add((Room)list[0], loc_result);
             }
@@ -227,6 +227,7 @@ namespace Compute_Engine
                 do
                 {
                     #region ElementType
+
                     if (_temp.Parent is Junction)
                     {
                         Check(((Junction)_temp.Parent).Branch.Elements);
@@ -344,6 +345,7 @@ namespace Compute_Engine
 
                         _dtee = null;
                     }
+
                     #endregion
 
                     _temp = _temp.Parent;
@@ -617,17 +619,31 @@ namespace Compute_Engine
 
         private void Check(ElementsCollection elementsCollection)
         {
-            if (elementsCollection == null) { throw new ArgumentNullException(); }
-            else if (elementsCollection.Count() == 0) { throw new Exception("Brak wystarczającej ilości elementów do przeprowadzenia obliczeń."); }
+            if (elementsCollection == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (elementsCollection.Count() == 0)
+            {
+                throw new Exception("Brak wystarczającej ilości elementów do przeprowadzenia obliczeń.");
+            }
             else if ((from element in elementsCollection where element.Type == ElementType.Room select element).ToList().Count > 1)
-            { throw new Exception("Zbyt duża liczba elementów typu Room w sekwencji."); }
+            {
+                throw new Exception("Zbyt duża liczba elementów typu Room w sekwencji.");
+            }
             else if ((from element in elementsCollection where element.Type == ElementType.TJunction select element).ToList().Count > 1)
-            { throw new Exception("Zbyt duża liczba elementów typu T-trónik w sekwencji."); }
+            {
+                throw new Exception("Zbyt duża liczba elementów typu T-trónik w sekwencji.");
+            }
             else if (elementsCollection.Last().Type != ElementType.Room && elementsCollection.Last().Type != ElementType.TJunction)
-            { throw new Exception("Nieprawidłowa kolejność elementów w sekwencji."); }
+            {
+                throw new Exception("Nieprawidłowa kolejność elementów w sekwencji.");
+            }
             else if ((from element in elementsCollection where element.Type == ElementType.TJunction select element).ToList().Count == 1 &&
                 (from element in elementsCollection where element.Type == ElementType.Room select element).ToList().Count == 1)
-            { throw new Exception("Elementy typu T-trónik i Room nie mogą występować w tym samym ciągu."); }
+            {
+                throw new Exception("Elementy typu T-trónik i Room nie mogą występować w tym samym ciągu.");
+            }
         }
 
         public IEnumerator<ElementsBase> GetEnumerator()

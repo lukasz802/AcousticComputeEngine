@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Compute_Engine.Factories;
+using System;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
 using Function = Compute_Engine;
@@ -10,7 +7,7 @@ using Function = Compute_Engine;
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public class Plenum : ElementsBase, IChangeableDimensions<DuctConnection>
+    public class Plenum : ElementsBase, IChangeableDimensions<IDuctConnection>
     {
         private static int _counter = 1;
         private static string _name = "pln_";
@@ -21,8 +18,8 @@ namespace Compute_Engine.Elements
         private int _liner_thickness;
         private bool _liner_check;
         private PlenumType _plenum_type;
-        private DuctConnection _in = null;
-        private DuctConnection _out = null;
+        private IDuctConnection _in;
+        private IDuctConnection _out;
 
         /// <summary>Skrzynka tłumiąca.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -58,8 +55,8 @@ namespace Compute_Engine.Elements
             _dl = inLocationLenght;
             _liner_check = linerCheck;
             _liner_thickness = linerThickness;
-            _in = new DuctConnection(plenumIn, base.AirFlow, widthIn, heightIn, diameterIn);
-            _out = new DuctConnection(plenumOut, base.AirFlow, widthOut, heightOut, diameterOut);
+            _in = ConnectionElementsFactory.GetConnectionElement(plenumIn, base.AirFlow, widthIn, heightIn, diameterIn);
+            _out = ConnectionElementsFactory.GetConnectionElement(plenumOut, base.AirFlow, widthOut, heightOut, diameterOut);
             _in.DimensionsChanged += _DimensionsChanged;
             _out.DimensionsChanged += _DimensionsChanged;
             _counter = 1;
@@ -88,8 +85,8 @@ namespace Compute_Engine.Elements
             _dl = 300;
             _liner_check = false;
             _liner_thickness = 25;
-            _in = new DuctConnection(DuctType.Round, base.AirFlow, 200, 160, 160);
-            _out = new DuctConnection(DuctType.Rectangular, base.AirFlow, 400, 250, 250);
+            _in = ConnectionElementsFactory.GetConnectionElement(DuctType.Round, base.AirFlow, 200, 160, 160);
+            _out = ConnectionElementsFactory.GetConnectionElement(DuctType.Rectangular, base.AirFlow, 400, 250, 250);
             _in.DimensionsChanged += _DimensionsChanged;
             _out.DimensionsChanged += _DimensionsChanged;
         }
@@ -251,7 +248,7 @@ namespace Compute_Engine.Elements
             return lw;
         }
 
-        public DuctConnection Inlet
+        public IDuctConnection Inlet
         {
             get
             {
@@ -259,7 +256,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public DuctConnection Outlet
+        public IDuctConnection Outlet
         {
             get
             {

@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
 
 namespace Compute_Engine
 {
     public static class Noise
     {
+
+        #region Public methods
+
         public static double[] Fan(FanType type, double q, double dp, int rpm, byte blade, byte eff, byte io)
         {
             //hałas generowany przez wentylator
@@ -174,17 +173,6 @@ namespace Compute_Engine
             { return 0; }
         }
 
-        private static double BFI(double rpm, double oct, double blade, double n)
-        {
-            double bf;
-            bf = (rpm * blade) / 60;
-
-            if (Oct_BFI(bf) == oct)
-            { return n; }
-            else
-            { return 0; }
-        }
-
         public static double[] DamperRectangular(byte blade_number, byte ang, double q, double w, double h)
         {
             //tylko dla przepustnic jednopłaszczznowych i wielopłaszczyznowych współbieżnych
@@ -240,111 +228,6 @@ namespace Compute_Engine
                 loc[i] = kd + 10 * Math.Log10(oct[i] / 63) + 50 * Math.Log10(uc) + 10 * Math.Log10(s1) + 10 * Math.Log10(UnitConvertion.MToFt(h));
             }
             return loc;
-        }
-
-        private static double DamperDP(double n, double q, double ang, double w, double h)
-        {
-            //Q-przepływ powietrza, m3/h
-            //w-szerokość przepustnicy (wymiar równoległy do osi obrotu łopatek), m
-            //h-wysokość przepustnicy, m
-            //ang-kąt ustawienia przepustnicy (od 0st. do 70st. - jednopłaszczyznowa/od 0st. do 80st. - wielopłaszczyznowa)
-            //h/w=od 0.1 do 5
-            //LR=od 0.3 do 1.5
-            //n-liczba łopatek przepustnicy
-            double dt_kon = new double();
-            double ang1, v, dt1, dt2, dt3, lr;
-            double dt4, dt5, dt6, dt7, dt8, dt9, dt10;
-
-            ang1 = ang / 25;
-            v = (q / 3600) / (w * h);
-
-            if (n == 0 || n == 1)
-            {
-                //przepustnica jednopłaszczyznowa
-                dt1 = Math.Exp(0.1383 * Math.Pow(ang1, 5) - 1.1265 * Math.Pow(ang, 4) + 3.5854 * Math.Pow(ang1, 3) - 5.5999 * Math.Pow(ang1, 2) + 6.8212 * (ang1) - 3.2223);
-                dt2 = Math.Exp(-0.0383 * Math.Pow(ang1, 5) + 0.23 * Math.Pow(ang1, 4) - 0.2955 * Math.Pow(ang1, 3) - 0.4917 * Math.Pow(ang1, 2) + 3.8143 * (ang1) - 2.5284);
-                dt3 = Math.Exp(-0.169 * Math.Pow(ang1, 5) + 1.2375 * Math.Pow(ang1, 4) - 3.187 * Math.Pow(ang1, 3) + 3.305 * Math.Pow(ang1, 2) + 1.6272 * (ang1) - 2.0425);
-
-                if (h / w < 0.25)
-                {
-                    dt_kon = dt1 + (dt2 - dt1) / (1 - 0.25) * (h / w - 0.25);
-                }
-                else if (h / w >= 0.25 && h / w <= 1)
-                {
-                    dt_kon = dt2;
-                }
-                else if (h / w > 1 && h / w <= 2)
-                {
-                    dt_kon = dt2 + (dt3 - dt2) / (2 - 1) * (h / w - 1);
-                }
-                else
-                {
-                    dt_kon = dt3 + (dt3 - dt2) / (2 - 1) * (h / w - 2);
-                }
-            }
-            else
-            {
-                //przepustnica wielopłaszczyznowa
-                lr = n * w / (2 * (w + h));
-                dt4 = Math.Exp(-0.0075 * Math.Pow(ang1, 6) + 0.1499 * Math.Pow(ang1, 5) - 0.7451 * Math.Pow(ang1, 4) + 1.405 * Math.Pow(ang1, 3) - 0.87188 * Math.Pow(ang1, 2) + 1.3239 * (ang1) - 0.66);
-                dt5 = Math.Exp(0.0073 * Math.Pow(ang1, 6) + 0.0161 * Math.Pow(ang1, 5) - 0.3276 * Math.Pow(ang1, 4) + 0.9373 * Math.Pow(ang1, 3) - 0.8558 * Math.Pow(ang1, 2) + 1.5121 * (ang1) - 0.6594);
-                dt6 = Math.Exp(0.0362 * Math.Pow(ang1, 6) - 0.2617 * Math.Pow(ang1, 5) + 0.64 * Math.Pow(ang1, 4) - 0.5072 * Math.Pow(ang1, 3) - 0.0287 * Math.Pow(ang1, 2) + 1.4517 * (ang1) - 0.6582);
-                dt7 = Math.Exp(0.0639 * Math.Pow(ang1, 6) - 0.511 * Math.Pow(ang1, 5) + 1.4687 * Math.Pow(ang1, 4) - 1.7024 * Math.Pow(ang1, 3) + 0.629 * Math.Pow(ang1, 2) + 1.4155 * (ang1) - 0.6565);
-                dt8 = Math.Exp(-0.0008 * Math.Pow(ang1, 6) + 0.0594 * Math.Pow(ang1, 5) - 0.4128 * Math.Pow(ang1, 4) + 1.1876 * Math.Pow(ang1, 3) - 1.4408 * Math.Pow(ang1, 2) + 1.9957 * (ang1) - 0.6567);
-                dt9 = Math.Exp(-0.0054 * Math.Pow(ang1, 6) + 0.1068 * Math.Pow(ang1, 5) - 0.5984 * Math.Pow(ang1, 4) + 1.5604 * Math.Pow(ang1, 3) - 1.8496 * Math.Pow(ang1, 2) + 2.2135 * (ang1) - 0.6568);
-                dt10 = Math.Exp(-0.0255 * Math.Pow(ang1, 6) + 0.2855 * Math.Pow(ang1, 5) - 1.2281 * Math.Pow(ang1, 4) + 2.7208 * Math.Pow(ang1, 3) - 2.9914 * Math.Pow(ang1, 2) + 2.7019 * (ang1) - 0.6562);
-
-                if (lr == 0.3)
-                {
-                    dt_kon = dt4;
-                }
-                else if (lr > 0.3 && lr <= 0.4)
-                {
-                    dt_kon = dt4 + (dt5 - dt4) / (0.4 - 0.3) * (lr - 0.3);
-                }
-                else if (lr > 0.4 && lr <= 0.5)
-                {
-                    dt_kon = dt5 + (dt6 - dt5) / (0.5 - 0.4) * (lr - 0.4);
-                }
-                else if (lr > 0.5 && lr <= 0.6)
-                {
-                    dt_kon = dt6 + (dt7 - dt6) / (0.6 - 0.5) * (lr - 0.5);
-                }
-                else if (lr > 0.6 && lr <= 0.8)
-                {
-                    dt_kon = dt7 + (dt8 - dt7) / (0.8 - 0.6) * (lr - 0.6);
-                }
-                else if (lr > 0.8 && lr <= 1.0)
-                {
-                    dt_kon = dt8 + (dt9 - dt8) / (1.0 - 0.8) * (lr - 0.8);
-                }
-                else if (lr > 1.0 && lr <= 1.5)
-                {
-                    dt_kon = dt9 + (dt10 - dt9) / (1.5 - 1.0) * (lr - 1.0);
-                }
-            }
-
-            return dt_kon * 0.6 * Math.Pow(v, 2);
-        }
-
-        private static double DamperRadDP(double q, double ang, double d)
-        {
-            //q-przepływ powietrza, m3/h
-            //w-szerokość przepustnicy (wymiar równoległy do osi obrotu łopatek), m
-            //d-średnica przepustnicy, m
-            //ang-kąt ustawienia przepustnicy (od 0st. do 70st. - jednopłaszczyznowa/od 0st. do 80st. - wielopłaszczyznowa)
-            double ang1, v, dt;
-            ang1 = ang / 25;
-            v = (q / 3600) / (Math.PI * 0.25 * Math.Pow(d, 2));
-            if (ang < 10)
-            {
-                dt = 0.2 + (0.52 - 0.2) / 10 * ang;
-            }
-            else
-            {
-                dt = 9.691 * Math.Pow(ang1, 6) - 52.938 * Math.Pow(ang1, 5) + 111.16 * Math.Pow(ang1, 4) - 107.31 * Math.Pow(ang1, 3) + 49.466 * Math.Pow(ang1, 2) - 7.675 * (ang1) + 0.2;
-            }
-            return dt * 0.6 * Math.Pow(v, 2);
         }
 
         public static double[] DamperRound(byte ang, double q, double d)
@@ -472,55 +355,6 @@ namespace Compute_Engine
             return lwf;
         }
 
-        private static double[] ElbowTurnVanDP(double q, double w, double h, double r)
-        {
-            //q-przepływ powietrza, m3/h
-            //w-szerokość kolana (wymiar prostopadły do kierumku prowadzenia łopatek), m
-            //h-wysokość kolana, m
-            //r-promień zaokrąglenia kolana/kierownicy, m
-            //od r/w=0 do r/w=0.6
-            double v, dt, n, dh;
-            double[] eq = new double[2];
-
-            dh = 2 * h * w / (h + w);
-            v = (q / 3600) / (w * h);
-
-            if (r == 0)
-            {
-                dt = 0.45;
-            }
-            else
-            {
-                dt = -222.22 * Math.Pow((r / w), 6) + 408.33 * Math.Pow((r / w), 5) - 280.56 * Math.Pow((r / w), 4) + 87.917 * Math.Pow((r / w), 3) - 10.172 * Math.Pow((r / w), 2) - 0.62 * (r / w) + 0.33;
-            }
-
-            if (!(r == 0))
-            {
-                if (!(Math.Round(2.13 * Math.Pow((r / w), -1) - 1) <= 1))
-                {
-                    n = Math.Round(2.13 * Math.Pow((r / w), -1) - 1);
-                }
-                else
-                {
-                    n = 1;
-                }
-            }
-            else
-            {
-                if (!(Math.Round(2.13 * Math.Pow((0.35 * dh / (w * Math.Pow(2, 0.5))), (-1)) - 1) <= 1))
-                {
-                    n = Math.Round(2.13 * Math.Pow((0.35 * dh / (w * Math.Pow(2, 0.5))), (-1)) - 1);
-                }
-                else
-                {
-                    n = 1;
-                }
-            }
-            eq[0] = n;
-            eq[1] = (dt + 0.02 + 0.031 * (r / w)) * 0.6 * Math.Pow(v, 2);
-            return eq;
-        }
-
         public static double[] BowRectangular(double q, double w, double h, double r)
         {
             //q-wydajność, m3/h
@@ -571,7 +405,7 @@ namespace Compute_Engine
             return lwf;
         }
 
-        public static double[] Junction(Branch which_branch, double qb, double qm, double ab, double am, double r, Turbulence turbulence)
+        public static double[] Junction(BranchDirection which_branch, double qb, double qm, double ab, double am, double r, Turbulence turbulence)
         {
             //qm-przepływ powietrza w przewodzie głównym, m3/h
             //qb-przepływ powietrza w odgałęzieniu, m3/h
@@ -597,7 +431,7 @@ namespace Compute_Engine
                 dr = (1 - rd / 0.15) * (6.793 - 1.86 * Math.Log10(st));
                 dt = -1.667 + 1.8 * (um / ub) - 0.133 * Math.Pow((um / ub), 2);
 
-                if (which_branch == Branch.BranchRight || which_branch == Branch.BranchLeft)
+                if (which_branch == BranchDirection.BranchRight || which_branch == BranchDirection.BranchLeft)
                 {
                     if (turbulence == Turbulence.No)
                     {
@@ -623,7 +457,7 @@ namespace Compute_Engine
             return lwf;
         }
 
-        public static double[] TJunction(Branch which_branch, double q1, double q2, double a1, double a2, double am, double r1, double r2, Turbulence turbulence)
+        public static double[] TJunction(BranchDirection which_branch, double q1, double q2, double a1, double a2, double am, double r1, double r2, Turbulence turbulence)
         {
             //q1-przepływ powietrza w odgałęzieniu nr 1, m3/h
             //q2-przepływ powietrza w odgałęzieniu nr 2, m3/h
@@ -639,9 +473,9 @@ namespace Compute_Engine
             dm = Math.Pow((4 * (am * Math.Pow(UnitConvertion.MToFt(1), 2)) / Math.PI), 0.5);
             um = qm / (60 * (am * Math.Pow(UnitConvertion.MToFt(1), 2)));
 
-            if (which_branch == Branch.BranchRight || which_branch == Branch.BranchLeft)
+            if (which_branch == BranchDirection.BranchRight || which_branch == BranchDirection.BranchLeft)
             {
-                if (which_branch == Branch.BranchRight)
+                if (which_branch == BranchDirection.BranchRight)
                 {
                     ab = a1 * Math.Pow(UnitConvertion.MToFt(1), 2);
                     qb = UnitConvertion.CMHToCFM(q1);
@@ -707,7 +541,7 @@ namespace Compute_Engine
             return lwf;
         }
 
-        public static double[] DoubleJunction(Branch which_branch, double q1, double q2, double qm, double a1, double a2, double am, double r1, double r2, Turbulence turbulence)
+        public static double[] DoubleJunction(BranchDirection which_branch, double q1, double q2, double qm, double a1, double a2, double am, double r1, double r2, Turbulence turbulence)
         {
             //q1-przepływ powietrza w odgałęzieniu nr 1, m3/h
             //q2-przepływ powietrza w odgałęzieniu nr 2, m3/h
@@ -723,9 +557,9 @@ namespace Compute_Engine
             dm = Math.Pow((4 * (am * Math.Pow(UnitConvertion.MToFt(1), 2)) / Math.PI), 0.5);
             um = UnitConvertion.CMHToCFM(qm) / (60 * (am * Math.Pow(UnitConvertion.MToFt(1), 2)));
 
-            if (which_branch == Branch.BranchRight || which_branch == Branch.BranchLeft)
+            if (which_branch == BranchDirection.BranchRight || which_branch == BranchDirection.BranchLeft)
             {
-                if (which_branch == Branch.BranchRight)
+                if (which_branch == BranchDirection.BranchRight)
                 {
                     ab = a1 * Math.Pow(UnitConvertion.MToFt(1), 2);
                     qb = UnitConvertion.CMHToCFM(q1);
@@ -959,6 +793,175 @@ namespace Compute_Engine
             return lw;
         }
 
+        #endregion
+
+        #region Methods
+
+        private static double BFI(double rpm, double oct, double blade, double n)
+        {
+            double bf;
+            bf = (rpm * blade) / 60;
+
+            if (Oct_BFI(bf) == oct)
+            { return n; }
+            else
+            { return 0; }
+        }
+
+        private static double DamperDP(double n, double q, double ang, double w, double h)
+        {
+            //Q-przepływ powietrza, m3/h
+            //w-szerokość przepustnicy (wymiar równoległy do osi obrotu łopatek), m
+            //h-wysokość przepustnicy, m
+            //ang-kąt ustawienia przepustnicy (od 0st. do 70st. - jednopłaszczyznowa/od 0st. do 80st. - wielopłaszczyznowa)
+            //h/w=od 0.1 do 5
+            //LR=od 0.3 do 1.5
+            //n-liczba łopatek przepustnicy
+            double dt_kon = new double();
+            double ang1, v, dt1, dt2, dt3, lr;
+            double dt4, dt5, dt6, dt7, dt8, dt9, dt10;
+
+            ang1 = ang / 25;
+            v = (q / 3600) / (w * h);
+
+            if (n == 0 || n == 1)
+            {
+                //przepustnica jednopłaszczyznowa
+                dt1 = Math.Exp(0.1383 * Math.Pow(ang1, 5) - 1.1265 * Math.Pow(ang, 4) + 3.5854 * Math.Pow(ang1, 3) - 5.5999 * Math.Pow(ang1, 2) + 6.8212 * (ang1) - 3.2223);
+                dt2 = Math.Exp(-0.0383 * Math.Pow(ang1, 5) + 0.23 * Math.Pow(ang1, 4) - 0.2955 * Math.Pow(ang1, 3) - 0.4917 * Math.Pow(ang1, 2) + 3.8143 * (ang1) - 2.5284);
+                dt3 = Math.Exp(-0.169 * Math.Pow(ang1, 5) + 1.2375 * Math.Pow(ang1, 4) - 3.187 * Math.Pow(ang1, 3) + 3.305 * Math.Pow(ang1, 2) + 1.6272 * (ang1) - 2.0425);
+
+                if (h / w < 0.25)
+                {
+                    dt_kon = dt1 + (dt2 - dt1) / (1 - 0.25) * (h / w - 0.25);
+                }
+                else if (h / w >= 0.25 && h / w <= 1)
+                {
+                    dt_kon = dt2;
+                }
+                else if (h / w > 1 && h / w <= 2)
+                {
+                    dt_kon = dt2 + (dt3 - dt2) / (2 - 1) * (h / w - 1);
+                }
+                else
+                {
+                    dt_kon = dt3 + (dt3 - dt2) / (2 - 1) * (h / w - 2);
+                }
+            }
+            else
+            {
+                //przepustnica wielopłaszczyznowa
+                lr = n * w / (2 * (w + h));
+                dt4 = Math.Exp(-0.0075 * Math.Pow(ang1, 6) + 0.1499 * Math.Pow(ang1, 5) - 0.7451 * Math.Pow(ang1, 4) + 1.405 * Math.Pow(ang1, 3) - 0.87188 * Math.Pow(ang1, 2) + 1.3239 * (ang1) - 0.66);
+                dt5 = Math.Exp(0.0073 * Math.Pow(ang1, 6) + 0.0161 * Math.Pow(ang1, 5) - 0.3276 * Math.Pow(ang1, 4) + 0.9373 * Math.Pow(ang1, 3) - 0.8558 * Math.Pow(ang1, 2) + 1.5121 * (ang1) - 0.6594);
+                dt6 = Math.Exp(0.0362 * Math.Pow(ang1, 6) - 0.2617 * Math.Pow(ang1, 5) + 0.64 * Math.Pow(ang1, 4) - 0.5072 * Math.Pow(ang1, 3) - 0.0287 * Math.Pow(ang1, 2) + 1.4517 * (ang1) - 0.6582);
+                dt7 = Math.Exp(0.0639 * Math.Pow(ang1, 6) - 0.511 * Math.Pow(ang1, 5) + 1.4687 * Math.Pow(ang1, 4) - 1.7024 * Math.Pow(ang1, 3) + 0.629 * Math.Pow(ang1, 2) + 1.4155 * (ang1) - 0.6565);
+                dt8 = Math.Exp(-0.0008 * Math.Pow(ang1, 6) + 0.0594 * Math.Pow(ang1, 5) - 0.4128 * Math.Pow(ang1, 4) + 1.1876 * Math.Pow(ang1, 3) - 1.4408 * Math.Pow(ang1, 2) + 1.9957 * (ang1) - 0.6567);
+                dt9 = Math.Exp(-0.0054 * Math.Pow(ang1, 6) + 0.1068 * Math.Pow(ang1, 5) - 0.5984 * Math.Pow(ang1, 4) + 1.5604 * Math.Pow(ang1, 3) - 1.8496 * Math.Pow(ang1, 2) + 2.2135 * (ang1) - 0.6568);
+                dt10 = Math.Exp(-0.0255 * Math.Pow(ang1, 6) + 0.2855 * Math.Pow(ang1, 5) - 1.2281 * Math.Pow(ang1, 4) + 2.7208 * Math.Pow(ang1, 3) - 2.9914 * Math.Pow(ang1, 2) + 2.7019 * (ang1) - 0.6562);
+
+                if (lr == 0.3)
+                {
+                    dt_kon = dt4;
+                }
+                else if (lr > 0.3 && lr <= 0.4)
+                {
+                    dt_kon = dt4 + (dt5 - dt4) / (0.4 - 0.3) * (lr - 0.3);
+                }
+                else if (lr > 0.4 && lr <= 0.5)
+                {
+                    dt_kon = dt5 + (dt6 - dt5) / (0.5 - 0.4) * (lr - 0.4);
+                }
+                else if (lr > 0.5 && lr <= 0.6)
+                {
+                    dt_kon = dt6 + (dt7 - dt6) / (0.6 - 0.5) * (lr - 0.5);
+                }
+                else if (lr > 0.6 && lr <= 0.8)
+                {
+                    dt_kon = dt7 + (dt8 - dt7) / (0.8 - 0.6) * (lr - 0.6);
+                }
+                else if (lr > 0.8 && lr <= 1.0)
+                {
+                    dt_kon = dt8 + (dt9 - dt8) / (1.0 - 0.8) * (lr - 0.8);
+                }
+                else if (lr > 1.0 && lr <= 1.5)
+                {
+                    dt_kon = dt9 + (dt10 - dt9) / (1.5 - 1.0) * (lr - 1.0);
+                }
+            }
+
+            return dt_kon * 0.6 * Math.Pow(v, 2);
+        }
+
+        private static double DamperRadDP(double q, double ang, double d)
+        {
+            //q-przepływ powietrza, m3/h
+            //w-szerokość przepustnicy (wymiar równoległy do osi obrotu łopatek), m
+            //d-średnica przepustnicy, m
+            //ang-kąt ustawienia przepustnicy (od 0st. do 70st. - jednopłaszczyznowa/od 0st. do 80st. - wielopłaszczyznowa)
+            double ang1, v, dt;
+            ang1 = ang / 25;
+            v = (q / 3600) / (Math.PI * 0.25 * Math.Pow(d, 2));
+            if (ang < 10)
+            {
+                dt = 0.2 + (0.52 - 0.2) / 10 * ang;
+            }
+            else
+            {
+                dt = 9.691 * Math.Pow(ang1, 6) - 52.938 * Math.Pow(ang1, 5) + 111.16 * Math.Pow(ang1, 4) - 107.31 * Math.Pow(ang1, 3) + 49.466 * Math.Pow(ang1, 2) - 7.675 * (ang1) + 0.2;
+            }
+            return dt * 0.6 * Math.Pow(v, 2);
+        }
+
+        private static double[] ElbowTurnVanDP(double q, double w, double h, double r)
+        {
+            //q-przepływ powietrza, m3/h
+            //w-szerokość kolana (wymiar prostopadły do kierumku prowadzenia łopatek), m
+            //h-wysokość kolana, m
+            //r-promień zaokrąglenia kolana/kierownicy, m
+            //od r/w=0 do r/w=0.6
+            double v, dt, n, dh;
+            double[] eq = new double[2];
+
+            dh = 2 * h * w / (h + w);
+            v = (q / 3600) / (w * h);
+
+            if (r == 0)
+            {
+                dt = 0.45;
+            }
+            else
+            {
+                dt = -222.22 * Math.Pow((r / w), 6) + 408.33 * Math.Pow((r / w), 5) - 280.56 * Math.Pow((r / w), 4) + 87.917 * Math.Pow((r / w), 3) - 10.172 * Math.Pow((r / w), 2) - 0.62 * (r / w) + 0.33;
+            }
+
+            if (!(r == 0))
+            {
+                if (!(Math.Round(2.13 * Math.Pow((r / w), -1) - 1) <= 1))
+                {
+                    n = Math.Round(2.13 * Math.Pow((r / w), -1) - 1);
+                }
+                else
+                {
+                    n = 1;
+                }
+            }
+            else
+            {
+                if (!(Math.Round(2.13 * Math.Pow((0.35 * dh / (w * Math.Pow(2, 0.5))), (-1)) - 1) <= 1))
+                {
+                    n = Math.Round(2.13 * Math.Pow((0.35 * dh / (w * Math.Pow(2, 0.5))), (-1)) - 1);
+                }
+                else
+                {
+                    n = 1;
+                }
+            }
+            eq[0] = n;
+            eq[1] = (dt + 0.02 + 0.031 * (r / w)) * 0.6 * Math.Pow(v, 2);
+            return eq;
+        }
+
         private static double GrillPlateDp(GrillType grillType, double q, double a, double p)
         {
             //q-przepływ powietrza, m3/h
@@ -1102,5 +1105,8 @@ namespace Compute_Engine
         {
             return (0.00008 * Math.Pow(t, 2) + 0.0905 * t + 13.421) * Math.Pow(10, -6);
         }
+
+        #endregion
+
     }
 }

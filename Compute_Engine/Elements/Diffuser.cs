@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Compute_Engine.Factories;
+using System;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
 using Function = Compute_Engine;
@@ -10,12 +7,12 @@ using Function = Compute_Engine;
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public class Diffuser : ElementsBase, IChangeableDimensions<DuctConnection>
+    public class Diffuser : ElementsBase, IChangeableDimensions<IDuctConnection>
     {
         private static int _counter = 1;
         private static string _name = "dfs_";
-        private DuctConnection _in = null;
-        private DuctConnection _out = null;
+        private IDuctConnection _in;
+        private IDuctConnection _out;
         private double _lenght;
         private DiffuserType _diffuser_type;
 
@@ -45,8 +42,8 @@ namespace Compute_Engine.Elements
             this.IsIncluded = include;
             _diffuser_type = diffuserType;
             _lenght = lenght;
-            _in = new DuctConnection(diffuserIn, base.AirFlow, widthIn, heightIn, diameterIn);
-            _out = new DuctConnection(diffuserOut, base.AirFlow, widthOut, heightOut, diameterOut);
+            _in = ConnectionElementsFactory.GetConnectionElement(diffuserIn, base.AirFlow, widthIn, heightIn, diameterIn);
+            _out = ConnectionElementsFactory.GetConnectionElement(diffuserOut, base.AirFlow, widthOut, heightOut, diameterOut);
             _counter = 1;
         }
         /// <summary>Dyfuzor/konfuzor lub nagłe zwężenie/rozszerzenie.</summary>
@@ -60,8 +57,8 @@ namespace Compute_Engine.Elements
             this.IsIncluded = true;
             _diffuser_type = DiffuserType.Sudden;
             _lenght = 0;
-            _in = new DuctConnection(DuctType.Rectangular, 500, 200, 200, 250);
-            _out = new DuctConnection(DuctType.Rectangular, 500, 200, 200, 250);
+            _in = ConnectionElementsFactory.GetConnectionElement(DuctType.Rectangular, 500, 200, 200, 250);
+            _out = ConnectionElementsFactory.GetConnectionElement(DuctType.Rectangular, 500, 200, 200, 250);
         }
 
         /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
@@ -162,12 +159,12 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public DuctConnection Inlet
+        public IDuctConnection Inlet
         {
             get { return _in; }
         }
 
-        public DuctConnection Outlet
+        public IDuctConnection Outlet
         {
             get { return _out; }
         }

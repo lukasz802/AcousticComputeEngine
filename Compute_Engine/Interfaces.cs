@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
 
 namespace Compute_Engine
 {
     public class Interfaces
     {
-        public interface IBranch : IRectangular, IRound, IVelocity, IElementsContainer
+        public interface IBranch : IComputeSoundLevel, IDuctConnection, IElementsContainer
+        {
+            int Rounding { get; set; }
+            BranchType BranchType { get; set; }
+        }
+
+        public interface IComputeSoundLevel
         {
             double[] Attenuation();
             double[] Noise();
-            int AirFlow { get; set; }
-            int Rounding { get; set; }
-            BranchType BranchType { get; set; }
         }
 
         public interface IRectangular
@@ -29,9 +28,28 @@ namespace Compute_Engine
             int Diameter { get; set; }
         }
 
+        public interface IDuctElement
+        {
+            DuctType DuctType { get; set; }
+        }
+
         public interface IVelocity
         {
             double Velocity { get; }
+            int AirFlow { get; set; }
+        }
+
+        public interface IGrillOrifice
+        {
+            int Height { get; set; }
+            int Depth { get; set; }
+        }
+
+        public interface IDuctConnection : IRectangular, IRound, IVelocity, IDuctElement
+        {
+            event EventHandler DimensionsChanged;
+            event EventHandler AirFlowChanged;
+            event EventHandler DuctTypeChanged;
         }
 
         public interface IChangeableDimensions<T> where T : IRectangular, IRound, IVelocity
@@ -51,28 +69,26 @@ namespace Compute_Engine
             T Branch { get; }
         }
 
-        public interface IOctaveBandAttenuation
+        public interface ISoundAttenuator
         {
-            int OctaveBand63Hz { get; set; }
-            int OctaveBand125Hz { get; set; }
-            int OctaveBand250Hz { get; set; }
-            int OctaveBand500Hz { get; set; }
-            int OctaveBand1000Hz { get; set; }
-            int OctaveBand2000Hz { get; set; }
-            int OctaveBand4000Hz { get; set; }
-            int OctaveBand8000Hz { get; set; }
+            double TotalAttenution();
+            double OctaveBand63 { get; set; }
+            double OctaveBand125 { get; set; }
+            double OctaveBand250 { get; set; }
+            double OctaveBand500 { get; set; }
+            double OctaveBand1k { get; set; }
+            double OctaveBand2k { get; set; }
+            double OctaveBand4k { get; set; }
+            double OctaveBand8k { get; set; }
         }
 
-        public interface IOctaveBandAbsorption
+        public interface IRoom : IComputeSoundLevel
         {
-            double OctaveBand63Hz { get; set; }
-            double OctaveBand125Hz { get; set; }
-            double OctaveBand250Hz { get; set; }
-            double OctaveBand500Hz { get; set; }
-            double OctaveBand1000Hz { get; set; }
-            double OctaveBand2000Hz { get; set; }
-            double OctaveBand4000Hz { get; set; }
-            double OctaveBand8000Hz { get; set; }
+            NoiseLocation NoiseLocation { get; set; }
+            double Width { get; set; }
+            double Height { get; set; }
+            double Length { get; set; }
+            double Distance { get; set; }
         }
 
         public interface IElementsContainer

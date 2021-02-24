@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Compute_Engine.Factories;
+using System;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
 using Function = Compute_Engine;
@@ -14,7 +11,7 @@ namespace Compute_Engine.Elements
     {
         private static int _counter = 1;
         private static string _name = "sln_";
-        private SoundAttenuation _local = null;
+        private ISoundAttenuator _local;
         private int _width;
         private int _height;
         private int _diameter;
@@ -45,8 +42,8 @@ namespace Compute_Engine.Elements
         /// <param name="include">Czy uwzględnić element podczas obliczeń.</param>
         /// <returns></returns>
         public Silencer(string name, string comments, SilencerType silencerType, DuctType ductType, int airFlow, int width, int height,
-             int diameter, double lenght, int octaveBand63Hz, int octaveBand125Hz, int octaveBand250Hz, int octaveBand500Hz,
-             int octaveBand1000Hz, int octaveBand2000Hz, int octaveBand4000Hz, int octaveBand8000Hz, int percEffectiveArea,
+             int diameter, double lenght, double octaveBand63Hz, double octaveBand125Hz, double octaveBand250Hz, double octaveBand500Hz,
+             double octaveBand1000Hz, double octaveBand2000Hz, double octaveBand4000Hz, double octaveBand8000Hz, int percEffectiveArea,
              bool include)
         {
             _type = ElementType.Silencer;
@@ -61,7 +58,7 @@ namespace Compute_Engine.Elements
             _diameter = diameter;
             _lenght = lenght;
             _eff_area = percEffectiveArea;
-            _local = new SoundAttenuation(octaveBand63Hz, octaveBand125Hz, octaveBand250Hz, octaveBand500Hz,
+            _local = EquipElementsFactory.GetSoundAttenuator(octaveBand63Hz, octaveBand125Hz, octaveBand250Hz, octaveBand500Hz,
              octaveBand1000Hz, octaveBand2000Hz, octaveBand4000Hz, octaveBand8000Hz);
             _counter = 1;
         }
@@ -82,7 +79,7 @@ namespace Compute_Engine.Elements
             _diameter = 250;
             _lenght = 0.6;
             _eff_area = 100;
-            _local = new SoundAttenuation(1, 2, 5, 9, 16, 13, 5, 6);
+            _local = EquipElementsFactory.GetSoundAttenuator(1, 2, 5, 9, 16, 13, 5, 6);
             _name = this.Name;
         }
 
@@ -240,7 +237,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public SoundAttenuation OctaveBandAttenuation
+        public ISoundAttenuator OctaveBandAttenuation
         {
             get
             {
@@ -251,8 +248,8 @@ namespace Compute_Engine.Elements
         /// <summary>Oblicz tłumienie akustyczne elementu.</summary>
         public override double[] Attenuation()
         {
-            double[] attn = { _local.OctaveBand63Hz, _local.OctaveBand125Hz, _local.OctaveBand250Hz, _local.OctaveBand500Hz, _local.OctaveBand1000Hz,
-                _local.OctaveBand2000Hz, _local.OctaveBand4000Hz, _local.OctaveBand8000Hz };
+            double[] attn = { _local.OctaveBand63, _local.OctaveBand125, _local.OctaveBand250, _local.OctaveBand500, _local.OctaveBand1k,
+                _local.OctaveBand2k, _local.OctaveBand4k, _local.OctaveBand8k };
             return attn;
         }
 

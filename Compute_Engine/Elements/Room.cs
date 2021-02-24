@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Compute_Engine.Factories;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Compute_Engine.Enums;
+using static Compute_Engine.Interfaces;
 
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public class Room : ElementsBase
+    public class Room : ElementsBase, IRoom
     {
         private static int _counter = 1;
         private static string _name = "room_";
-        private RoomConstant _local = null;
+        private ISoundAttenuator _local;
         private double _width;
         private double _height;
         private double _lenght;
         private NoiseLocation _noiseLocation;
         private double _distance;
         private int _temperature;
-        private byte _rh;
-        private byte _directionFactor;
+        private int _rh;
+        private int _directionFactor;
 
         /// <summary>Pomieszczenie.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -58,7 +57,7 @@ namespace Compute_Engine.Elements
             _width = width;
             _height = height;
             _lenght = lenght;
-            _local = new RoomConstant(this, octaveBand63Hz, octaveBand125Hz, octaveBand250Hz, octaveBand500Hz,
+            _local = EquipElementsFactory.GetRoomConstatnt(this, octaveBand63Hz, octaveBand125Hz, octaveBand250Hz, octaveBand500Hz,
                 octaveBand1000Hz, octaveBand2000Hz, octaveBand4000Hz, octaveBand8000Hz);
             _counter = 1;
         }
@@ -78,7 +77,8 @@ namespace Compute_Engine.Elements
             _width = 10;
             _height = 3;
             _lenght = 12;
-            _local = new RoomConstant(this, Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[0], Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[1],
+            _local = EquipElementsFactory.GetRoomConstatnt(this,
+                Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[0], Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[1],
                 Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[2], Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[3],
                 Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[4], Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[5],
                 Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[6], Transmission.RoomAbsorptionCoeffiecient(RoomType.Average)[7]);
@@ -86,14 +86,14 @@ namespace Compute_Engine.Elements
 
         private void UpdateOctaveBandAbsorption()
         {
-            this.OctaveBandAbsorption.OctaveBand63Hz = _local.OctaveBand63Hz;
-            this.OctaveBandAbsorption.OctaveBand125Hz = _local.OctaveBand125Hz;
-            this.OctaveBandAbsorption.OctaveBand250Hz = _local.OctaveBand250Hz;
-            this.OctaveBandAbsorption.OctaveBand500Hz = _local.OctaveBand500Hz;
-            this.OctaveBandAbsorption.OctaveBand1000Hz = _local.OctaveBand1000Hz;
-            this.OctaveBandAbsorption.OctaveBand2000Hz = _local.OctaveBand2000Hz;
-            this.OctaveBandAbsorption.OctaveBand4000Hz = _local.OctaveBand4000Hz;
-            this.OctaveBandAbsorption.OctaveBand8000Hz = _local.OctaveBand8000Hz;
+            this.OctaveBandAbsorption.OctaveBand63 = _local.OctaveBand63;
+            this.OctaveBandAbsorption.OctaveBand125 = _local.OctaveBand125;
+            this.OctaveBandAbsorption.OctaveBand250 = _local.OctaveBand250;
+            this.OctaveBandAbsorption.OctaveBand500 = _local.OctaveBand500;
+            this.OctaveBandAbsorption.OctaveBand1k = _local.OctaveBand1k;
+            this.OctaveBandAbsorption.OctaveBand2k = _local.OctaveBand2k;
+            this.OctaveBandAbsorption.OctaveBand4k = _local.OctaveBand4k;
+            this.OctaveBandAbsorption.OctaveBand8k = _local.OctaveBand8k;
         }
 
         public override bool IsIncluded
@@ -131,7 +131,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public byte RelativeHumidity
+        public int RelativeHumidity
         {
             get
             {
@@ -216,7 +216,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public double Lenght
+        public double Length
         {
             get
             {
@@ -285,7 +285,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public RoomConstant OctaveBandAbsorption
+        public ISoundAttenuator OctaveBandAbsorption
         {
             get
             {
@@ -300,8 +300,8 @@ namespace Compute_Engine.Elements
 
             if (this.IsIncluded == true)
             {
-                attn = Transmission.PointCorrection(_temperature, _rh, _directionFactor, _distance, new double[] { _local.OctaveBand63Hz, _local.OctaveBand125Hz, _local.OctaveBand250Hz,
-            _local.OctaveBand500Hz, _local.OctaveBand1000Hz, _local.OctaveBand2000Hz, _local.OctaveBand4000Hz, _local.OctaveBand8000Hz}, _width, _lenght, _height);
+                attn = Transmission.PointCorrection(_temperature, _rh, _directionFactor, _distance, new double[] { _local.OctaveBand63, _local.OctaveBand125, _local.OctaveBand250,
+                    _local.OctaveBand500, _local.OctaveBand1k, _local.OctaveBand2k, _local.OctaveBand4k, _local.OctaveBand8k}, _width, _lenght, _height);
             }
             else
             {

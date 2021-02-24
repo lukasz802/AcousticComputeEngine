@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Compute_Engine.Factories;
+using System;
 using static Compute_Engine.Enums;
 using static Compute_Engine.Interfaces;
 using Function = Compute_Engine;
@@ -10,13 +7,13 @@ using Function = Compute_Engine;
 namespace Compute_Engine.Elements
 {
     [Serializable]
-    public class Junction : ElementsBase, IChangeableDimensions<JunctionMain>, ISingleBranchingElement<JunctionBranch>
+    public class Junction : ElementsBase, IChangeableDimensions<IDuctConnection>, ISingleBranchingElement<IBranch>
     {
         private static int _counter = 1;
         private static string _name = "jnt_";
-        private JunctionBranch _local = null;
-        private JunctionMain _main_in = null;
-        private JunctionMain _main_out = null;
+        private IBranch _local;
+        private IDuctConnection _main_in;
+        private IDuctConnection _main_out;
 
         /// <summary>Trójnik.</summary>
         /// <param name="name">Nazwa elementu.</param>
@@ -48,15 +45,25 @@ namespace Compute_Engine.Elements
             this.IsIncluded = include;
             _counter = 1;
 
+            if (airFlowBranch < 0)
+            {
+                airFlowBranch = 0;
+            }
+
             if (airFlowBranch >= airFlowMainIn)
             {
                 airFlowBranch = airFlowMainIn;
             }
 
-            _local = new JunctionBranch(ductTypeMainIn, base.AirFlow, widthMainIn, widthMainOut, heightMainIn, heightMainOut, diameterMainIn, diameterMainOut,
-                ductTypeBranch, branchType, airFlowBranch, widthBranch, heightBranch, diameterBranch, roundingBranch);
-            _main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
-            _main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
+            _main_in = ConnectionElementsFactory.GetConnectionElement(ductTypeMainIn, base.AirFlow, widthMainIn, heightMainIn, diameterMainIn);
+            _main_out = ConnectionElementsFactory.GetConnectionElement(ductTypeMainIn, base.AirFlow - airFlowBranch, widthMainOut, heightMainOut, diameterMainOut);
+            _local = BranchingElementsFactory.GetJunctionBranch(_main_in, _main_out, ductTypeBranch, branchType, airFlowBranch, widthBranch,
+                heightBranch, diameterBranch, roundingBranch);
+            _main_in.AirFlowChanged += UpdateInletAirFlow;
+            _main_in.DuctTypeChanged += UpdateInletDuctType;
+            _main_out.AirFlowChanged += UpdateOutletAirFlow;
+            _main_out.DuctTypeChanged += UpdateOutletDuctType;
+            _local.AirFlowChanged += UpdateBranchAirFlow;
             this.Branch.Elements._parent = this;
         }
 
@@ -70,14 +77,18 @@ namespace Compute_Engine.Elements
             base.AirFlow = 2400;
             this.IsIncluded = true;
 
-            _local = new JunctionBranch(DuctType.Rectangular, base.AirFlow, 400, 200, 400, 200, 450, 250, DuctType.Rectangular,
-                BranchType.Straight, 400, 160, 160, 200, 0);
-            _main_in = new JunctionMain(this, JunctionConnectionSide.Inlet);
-            _main_out = new JunctionMain(this, JunctionConnectionSide.Outlet);
+            _main_in = ConnectionElementsFactory.GetConnectionElement(DuctType.Rectangular, base.AirFlow, 400, 200, 450);
+            _main_out = ConnectionElementsFactory.GetConnectionElement(DuctType.Rectangular, base.AirFlow - 400, 400, 200, 450);
+            _local = BranchingElementsFactory.GetJunctionBranch(_main_in, _main_out, DuctType.Rectangular, BranchType.Straight, 400, 160, 160, 200, 0);
+            _main_in.AirFlowChanged += UpdateInletAirFlow;
+            _main_in.DuctTypeChanged += UpdateInletDuctType;
+            _main_out.AirFlowChanged += UpdateOutletAirFlow;
+            _main_out.DuctTypeChanged += UpdateOutletDuctType;
+            _local.AirFlowChanged += UpdateBranchAirFlow;
             this.Branch.Elements._parent = this;
         }
 
-        public JunctionBranch Branch
+        public IBranch Branch
         {
             get
             {
@@ -85,7 +96,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public JunctionMain Inlet
+        public IDuctConnection Inlet
         {
             get
             {
@@ -93,7 +104,7 @@ namespace Compute_Engine.Elements
             }
         }
 
-        public JunctionMain Outlet
+        public IDuctConnection Outlet
         {
             get
             {
@@ -109,15 +120,7 @@ namespace Compute_Engine.Elements
             }
             set
             {
-                base.AirFlow = value;
-                _local.In.AirFlow = value;
-
-                if (_local.AirFlow >= value)
-                {
-                    _local.AirFlow = value;
-                }
-
-                _local.Out.AirFlow = value - _local.AirFlow;
+                base.AirFlow = Inlet.AirFlow = value;
             }
         }
 
@@ -126,26 +129,26 @@ namespace Compute_Engine.Elements
         {
             double[] attn = new double[8];
 
-            if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Rectangular)
+            if (_main_in.DuctType == DuctType.Rectangular && Branch.DuctType == DuctType.Rectangular)
             {
-                attn = Function.Attenuation.JunctionMainRectangularBranchRectangular(Enums.Branch.Main, _local.BranchType, _main_in.Width / 1000.0, _main_in.Height / 1000.0,
-                        _main_out.Width / 1000.0, _main_out.Height / 1000.0, _local.Width / 1000.0, _local.Height / 1000.0);
+                attn = Function.Attenuation.JunctionMainRectangularBranchRectangular(Enums.BranchDirection.Main, Branch.BranchType, _main_in.Width / 1000.0, _main_in.Height / 1000.0,
+                        Outlet.Width / 1000.0, Outlet.Height / 1000.0, Branch.Width / 1000.0, Branch.Height / 1000.0);
             }
-            else if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Round)
+            else if (_main_in.DuctType == DuctType.Rectangular && Branch.DuctType == DuctType.Round)
             {
-                attn = Function.Attenuation.JunctionMainRectangularBranchRound(Enums.Branch.Main, _local.BranchType, _main_in.Width / 1000.0, _main_in.Height / 1000.0,
-                        _main_out.Width / 1000.0, _main_out.Height / 1000.0, _local.Diameter / 1000.0);
+                attn = Function.Attenuation.JunctionMainRectangularBranchRound(Enums.BranchDirection.Main, Branch.BranchType, _main_in.Width / 1000.0, _main_in.Height / 1000.0,
+                        Outlet.Width / 1000.0, Outlet.Height / 1000.0, Branch.Diameter / 1000.0);
 
             }
-            else if (_main_in.DuctType == DuctType.Round && _local.DuctType == DuctType.Rectangular)
+            else if (_main_in.DuctType == DuctType.Round && Branch.DuctType == DuctType.Rectangular)
             {
-                attn = Function.Attenuation.JunctionMainRoundBranchRectangular(Enums.Branch.Main, _local.BranchType, _main_in.Diameter / 1000.0,
-                        _main_out.Diameter / 1000.0, _local.Width / 1000.0, _local.Height / 1000.0);
+                attn = Function.Attenuation.JunctionMainRoundBranchRectangular(Enums.BranchDirection.Main, Branch.BranchType, _main_in.Diameter / 1000.0,
+                        Outlet.Diameter / 1000.0, Branch.Width / 1000.0, Branch.Height / 1000.0);
             }
             else
             {
-                attn = Function.Attenuation.JunctionMainRoundBranchRound(Enums.Branch.Main, _local.BranchType, _main_in.Diameter / 1000.0,
-                        _main_out.Diameter / 1000.0, _local.Diameter / 1000.0);
+                attn = Function.Attenuation.JunctionMainRoundBranchRound(Enums.BranchDirection.Main, Branch.BranchType, _main_in.Diameter / 1000.0,
+                        Outlet.Diameter / 1000.0, Branch.Diameter / 1000.0);
             }
             return attn;
         }
@@ -155,59 +158,120 @@ namespace Compute_Engine.Elements
         {
             double[] lw = new double[8];
 
-            if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Rectangular)
+            if (_main_in.DuctType == DuctType.Rectangular && Branch.DuctType == DuctType.Rectangular)
             {
-                if (_local.BranchType == BranchType.Rounded)
+                if (Branch.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
-                                   _main_in.Width / 1000.0 * _main_in.Height / 1000.0, _local.Rounding / 1000.0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Branch.Width / 1000.0 * Branch.Height / 1000.0,
+                         _main_in.Width / 1000.0 * _main_in.Height / 1000.0, Branch.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
-               _main_in.Width / 1000.0 * _main_in.Height / 1000.0, 0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Branch.Width / 1000.0 * Branch.Height / 1000.0,
+                        _main_in.Width / 1000.0 * _main_in.Height / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (_main_in.DuctType == DuctType.Rectangular && _local.DuctType == DuctType.Round)
+            else if (_main_in.DuctType == DuctType.Rectangular && Branch.DuctType == DuctType.Round)
             {
-                if (_local.BranchType == BranchType.Rounded)
+                if (Branch.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter / 1000.0, 2) * Math.PI * 0.25,
-                                   _main_in.Width / 1000.0 * _main_in.Height / 1000.0, _local.Rounding / 1000.0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Math.Pow(Branch.Diameter / 1000.0, 2) * Math.PI * 0.25,
+                        _main_in.Width / 1000.0 * _main_in.Height / 1000.0, Branch.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter / 1000.0, 2) * Math.PI * 0.25,
-                                   _main_in.Width / 1000.0 * _main_in.Height / 1000.0, 0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Math.Pow(Branch.Diameter / 1000.0, 2) * Math.PI * 0.25,
+                        _main_in.Width / 1000.0 * _main_in.Height / 1000.0, 0, Turbulence.No);
                 }
             }
-            else if (_main_in.DuctType == DuctType.Round && _local.DuctType == DuctType.Rectangular)
+            else if (_main_in.DuctType == DuctType.Round && Branch.DuctType == DuctType.Rectangular)
             {
-                if (_local.BranchType == BranchType.Rounded)
+                if (Branch.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
-                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, _local.Rounding / 1000.0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Branch.Width / 1000.0 * Branch.Height / 1000.0,
+                        Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, Branch.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, _local.Width / 1000.0 * _local.Height / 1000.0,
-                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Branch.Width / 1000.0 * Branch.Height / 1000.0,
+                        Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
                 }
             }
             else
             {
-                if (_local.BranchType == BranchType.Rounded)
+                if (Branch.BranchType == BranchType.Rounded)
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter / 1000.0, 2) * Math.PI * 0.25,
-                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, _local.Rounding / 1000.0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Math.Pow(Branch.Diameter / 1000.0, 2) * Math.PI * 0.25,
+                        Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, Branch.Rounding / 1000.0, Turbulence.No);
                 }
                 else
                 {
-                    lw = Function.Noise.Junction(Enums.Branch.Main, _local.AirFlow, _main_in.AirFlow, Math.Pow(_local.Diameter / 1000.0, 2) * Math.PI * 0.25,
-                   Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
+                    lw = Function.Noise.Junction(Enums.BranchDirection.Main, Branch.AirFlow, base.AirFlow, Math.Pow(Branch.Diameter / 1000.0, 2) * Math.PI * 0.25,
+                        Math.Pow(_main_in.Diameter / 1000.0, 2) * Math.PI * 0.25, 0, Turbulence.No);
                 }
             }
             return lw;
+        }
+
+        private void UpdateInletDuctType(object sender, EventArgs e)
+        {
+            _main_out.DuctTypeChanged -= UpdateOutletDuctType;
+            Outlet.DuctType = Inlet.DuctType;
+            _main_out.DuctTypeChanged += UpdateOutletDuctType;
+        }
+
+        private void UpdateOutletDuctType(object sender, EventArgs e)
+        {
+            _main_in.DuctTypeChanged -= UpdateInletDuctType;
+            Inlet.DuctType = Outlet.DuctType;
+            _main_in.DuctTypeChanged += UpdateInletDuctType;
+        }
+
+        private void UpdateInletAirFlow(object sender, EventArgs e)
+        {
+            _main_out.AirFlowChanged -= UpdateOutletAirFlow;
+            _local.AirFlowChanged -= UpdateBranchAirFlow;
+
+            base.AirFlow = Inlet.AirFlow;
+            if (base.AirFlow >= Branch.AirFlow)
+            {
+                Outlet.AirFlow = base.AirFlow - Branch.AirFlow;
+            }
+            else
+            {
+                Branch.AirFlow = base.AirFlow;
+                Outlet.AirFlow = 0;
+            }
+
+            _main_out.AirFlowChanged += UpdateOutletAirFlow;
+            _local.AirFlowChanged += UpdateBranchAirFlow;
+        }
+
+        private void UpdateOutletAirFlow(object sender, EventArgs e)
+        {
+            _main_in.AirFlowChanged -= UpdateInletAirFlow;
+            Inlet.AirFlow = Outlet.AirFlow + Branch.AirFlow;
+            base.AirFlow = Inlet.AirFlow;
+            _main_in.AirFlowChanged += UpdateInletAirFlow;
+        }
+
+        private void UpdateBranchAirFlow(object sender, EventArgs e)
+        {
+            _main_out.AirFlowChanged -= UpdateOutletAirFlow;
+            _main_in.AirFlowChanged -= UpdateInletAirFlow;
+
+            if (Branch.AirFlow <= Inlet.AirFlow)
+            {
+                Outlet.AirFlow = Inlet.AirFlow - Branch.AirFlow;
+            }
+            else
+            {
+                Branch.AirFlow = Inlet.AirFlow;
+                Outlet.AirFlow = 0;
+            }
+
+            _main_out.AirFlowChanged += UpdateOutletAirFlow;
+            _main_in.AirFlowChanged += UpdateInletAirFlow;
         }
     }
 }

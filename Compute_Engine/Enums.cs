@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Compute_Engine
 {
     public class Enums
@@ -81,7 +76,7 @@ namespace Compute_Engine
             Room = 12
         }
 
-        internal enum JunctionConnectionSide
+        public enum JunctionConnectionSide
         {
             Inlet = 0,
             Outlet = 1
@@ -110,11 +105,11 @@ namespace Compute_Engine
             Yes = 1
         }
 
-        public enum Branch
+        public enum BranchDirection
         {
+            Main = 0,
             BranchRight = 1,
             BranchLeft = 2,
-            Main = 0
         }
 
         public enum BranchType

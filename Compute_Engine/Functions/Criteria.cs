@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Compute_Engine
 {
     public static class Criteria
     {
+
+        #region Public methods
+
         public static double[] FilterA()
         {
             double[] loc = { -26.2, -16.1, -8.6, -3.2, 0, 1.2, 1.0, -1.1 };
@@ -307,5 +305,7 @@ namespace Compute_Engine
             double[] lw = { k63, k125, k250, k500, k1000, k2000, k4000, k8000 };
             return lw;
         }
+
+        #endregion
     }
 }
